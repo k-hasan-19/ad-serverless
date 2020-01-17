@@ -1,0 +1,47 @@
+Transform: AWS::Serverless-2016-10-31
+
+Globals:
+  Function:
+    Timeout: 3
+    Environment:
+      Variables:
+        TABLE_NAME: inneedEap
+        AWS_REGION_DYNAMODB: us-west-2
+
+
+Resources:
+  EAPGetFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ./eap-company-crud
+      Handler: app.get_company_meta
+      Runtime: python3.8
+      Policies:
+        - DynamoDBCrudPolicy:
+           TableName: inneedEap
+      Events:
+        CompanyGet:
+          Type: Api
+          Properties:
+            Path: /company/{company_id}
+            Method: GET
+            
+  EAPPutFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ./eap-company-crud
+      Handler: app.put_company_meta
+      Runtime: python3.8
+      Policies:
+        - DynamoDBCrudPolicy:
+           TableName: inneedEap
+      Events:
+        CompanyPut:
+          Type: Api
+          Properties:
+            Path: /company/
+            Method: PUT
+Outputs:
+  ApiUrl:
+    Description: "API url of the Prod environment"
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/resource/"
