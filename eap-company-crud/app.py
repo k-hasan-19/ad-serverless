@@ -22,7 +22,7 @@ def crud_handler(event, context):
 def get_company_meta(event, context):
     
     table = __get_table_client()
-    company_id = event["pathParameters"]["company_id"]
+    company_id = event["queryStringParameters"]["id"]
     PK, SK = _get_company_meta_keys(company_id)
     print("Key: ", json.dumps({'PK':PK, 'SK':SK}, indent=4))
 
@@ -43,7 +43,6 @@ def get_company_meta(event, context):
         consumed_cap = data["ConsumedCapacity"]
         print("GetItem succeeded:")
         print(json.dumps(data, indent=4, cls=DecimalEncoder))
-        print(json.dumps(consumed_cap, indent=4, cls=DecimalEncoder))
         
         
     
@@ -52,21 +51,36 @@ def get_company_meta(event, context):
 
 def put_company_meta(event, context):
     
-    import uuid
     table = __get_table_client()
-    company_id = str(uuid.uuid4())
-    PK, SK = _get_company_meta_keys(company_id)
-    payload = event['body']
-    payload['PK'] = PK
-    payload['SK'] = SK
     
-    print("Key: ", json.dumps({'PK':PK, 'SK':SK}, indent=4))
+    payload = json.loads(event['body'])
+    
+    PK, SK, name, domain, address, company_id = _get_company_meta(payload)
+    
+    print(PK, SK, name, domain, address)
 
     try:
-        data = table.put_item(Item=payload, ReturnValues='UPDATED_NEW', ReturnConsumedCapacity='TOTAL' )
-        
-        company_meta_info = _parse_company_details(data["Item"])
-        
+        table.update_item(
+            Key={
+                'PK': PK,
+                'SK': SK
+            },
+            UpdateExpression='SET #company_name = :company_name_value, #company_domain = :company_domain_value, #company_address = :company_address_value, #company_id = :company_id_value',
+            ExpressionAttributeNames={
+                '#company_name': 'name',
+                '#company_domain': 'company_domain',
+                '#company_address': 'address',
+                '#company_id': 'company_id'                
+            },
+            ExpressionAttributeValues={
+                ':company_name_value': name,
+                ':company_domain_value': domain,
+                ':company_address_value': address,
+                ':company_id_value': company_id
+            },
+            ReturnConsumedCapacity='TOTAL'
+        )
+        payload['company_id'] = company_id
         # response = table.get_item(Key={"PK":"COMPANY#8fd4728b-89b6-40aa-a57a-85a4672ec9a0", "SK":"#METADATA#8fd4728b-89b6-40aa-a57a-85a4672ec9a0"}, ReturnConsumedCapacity='TOTAL')
 
     except ClientError as e:
@@ -76,12 +90,10 @@ def put_company_meta(event, context):
         print(e)
         return _response(404, {'status':"ITEM NOT FOUND"})
     else:
-        consumed_cap = data["ConsumedCapacity"]
-        print("GetItem succeeded:")
-        print(json.dumps(data, indent=4, cls=DecimalEncoder))
-        print(json.dumps(consumed_cap, indent=4, cls=DecimalEncoder))
+        print("PutItem succeeded:")
+        print(json.dumps(payload, indent=4, cls=DecimalEncoder))
         
-    return _response(201, company_meta_info)
+    return _response(201, payload)
     
     
 ''' Company info cleaner'''
@@ -93,14 +105,34 @@ def _parse_company_details(item):
 
 ''' Company partition key generator '''
 
+def _get_company_meta(payload):
+    import uuid
+    
+    if not payload.get('company_id', None):
+        company_id = str(uuid.uuid4())
+    else:
+        company_id = payload['company_id']
+    PK = "COMPANY#" + company_id
+    SK = "#METADATA#" + company_id
+    name = payload['name']
+    domain = payload['domain']
+    address = payload['address']
+    return (
+        PK,
+        SK,
+        name,
+        domain,
+        address,
+        company_id,
+    )
+
 def _get_company_meta_keys(company_id):
     PK = "COMPANY#" + company_id
     SK = "#METADATA#" + company_id
     return (
         PK,
-        SK,
-    )
-
+        SK
+        )
 # Http response builder
 
 def _response(status_code, json_body):
