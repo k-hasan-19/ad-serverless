@@ -1,0 +1,81 @@
+openapi: 3.0.0
+# Added by API Auto Mocking Plugin
+servers:
+  - description: SwaggerHub API Auto Mocking
+    url: https://virtserver.swaggerhub.com/k-hasan-19/eap/1.0.0
+info:
+  title: EAP InNeed API
+  description: EAP CRUD & Analytics web service
+  version: '0.1'
+  contact:
+    email: kamrul@inneed.cloud
+  
+
+
+paths:
+  /company:
+    get:
+      tags:
+        - developers
+      summary: Returns a Company meta information by ID
+      operationId: getCompanyById
+      parameters:
+        - name: id
+          in: query
+          required: true
+          description: pass an company id for looking up company meta information
+          schema:
+            type : string
+            format: uuid
+      responses:
+        '200':    # status code
+          description: A JSON object of company meta information
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Company'
+        '400':
+          description: Bad input parameters
+                    
+
+    put:
+      tags:
+        - admins
+      summary: Creates a new Company.
+      operationId: addCompany
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Company'
+        description: Company information to add
+      responses:
+        '200':
+          description: 'Company created or updated'
+        '400':
+          description: 'Invalid input'
+        '409':
+          description: 'Item already exists'
+
+components:
+  schemas:
+    Company:
+      properties:
+        company_id:
+          type: string
+          format: uuid
+        name:
+          type: string
+          minLength: 3
+          maxLength: 40
+        domain:
+          type: string
+          format: hostname
+        address:
+          type: string
+      # Both properties are required
+      required:
+        - name
+        - domain
+        - address

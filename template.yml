@@ -74,6 +74,7 @@ Resources:
               type: string
             company_id:
               type: string
+        
     
 Outputs:
   ApiUrl:
