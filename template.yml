@@ -13,6 +13,7 @@ Resources:
   EAPGetCompanyFunction:
     Type: AWS::Serverless::Function
     Properties:
+      FunctionName: eap-get-company
       CodeUri: ./eap-company-crud
       Handler: app.get_company_meta
       Runtime: python3.8
@@ -25,9 +26,9 @@ Resources:
           Properties:
             Path: /company
             Method: GET
-            RequestParameters:
-              - method.request.querystring.id:
-                  Required: true
+            # RequestParameters:
+            #   - method.request.querystring.id:
+            #       Required: true
                 
             RestApiId:
               Ref: EAPApi
@@ -36,6 +37,7 @@ Resources:
   EAPPutCompanyFunction:
     Type: AWS::Serverless::Function
     Properties:
+      FunctionName: eap-put-company
       CodeUri: ./eap-company-crud
       Handler: app.put_company_meta
       Runtime: python3.8
@@ -50,30 +52,18 @@ Resources:
             Method: PUT
             RestApiId:
               Ref: EAPApi
-            RequestModel:
-              Model: CompanyMeta
-              Required: true
             
   EAPApi:
     Type: AWS::Serverless::Api
     Properties:
+      Name: eap-web-service
       StageName: prod
-      Models:
-        CompanyMeta:
-          type: object
-          required:
-            - name
-            - domain
-            - address
-          properties:
-            name:
-              type: string
-            domain:
-              type: string
-            address:
-              type: string
-            company_id:
-              type: string
+      DefinitionBody:
+        Fn::Transform:
+          Name: AWS::Include
+          Parameters:
+            Location: eap-openapi.yml
+      
         
     
 Outputs:

@@ -4,11 +4,20 @@ servers:
   - description: SwaggerHub API Auto Mocking
     url: https://virtserver.swaggerhub.com/k-hasan-19/eap/1.0.0
 info:
+# https://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-swagger-extensions.html
   title: EAP InNeed API
   description: EAP CRUD & Analytics web service
   version: '0.1'
   contact:
     email: kamrul@inneed.cloud
+
+x-amazon-apigateway-request-validators:
+  basic:
+    validateRequestBody: true
+    validateRequestParameters: true
+  params-only:
+    validateRequestBody: false
+    validateRequestParameters: true
   
 
 
@@ -36,7 +45,15 @@ paths:
                 $ref: '#/components/schemas/Company'
         '400':
           description: Bad input parameters
-                    
+          
+      x-amazon-apigateway-integration:
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${EAPGetCompanyFunction.Arn}/invocations
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_TEMPLATES
+        contentHandling: CONVERT_TO_TEXT
+        type: aws_proxy
+      x-amazon-apigateway-request-validator: basic
 
     put:
       tags:
@@ -53,10 +70,22 @@ paths:
       responses:
         '200':
           description: 'Company created or updated'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Company'
         '400':
           description: 'Invalid input'
         '409':
           description: 'Item already exists'
+      x-amazon-apigateway-integration:
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${EAPPutCompanyFunction.Arn}/invocations
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_TEMPLATES
+        contentHandling: CONVERT_TO_TEXT
+        type: aws_proxy
+      x-amazon-apigateway-request-validator: basic
 
 components:
   schemas:
