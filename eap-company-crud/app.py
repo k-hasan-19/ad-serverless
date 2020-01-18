@@ -8,6 +8,16 @@ from botocore.exceptions import ClientError
 from encoder_class import DecimalEncoder
 
 
+def crud_handler(event, context):
+    if event['httpMethod']=='GET':
+        response = get_company_meta(event, context)
+        return response
+    if event['httpMethod']=='PUT':
+        response = put_company_meta(event, context)
+        return response
+
+
+
 
 def get_company_meta(event, context):
     

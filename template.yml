@@ -10,11 +10,11 @@ Globals:
 
 
 Resources:
-  EAPGetFunction:
+  EAPCompanyFunction:
     Type: AWS::Serverless::Function
     Properties:
       CodeUri: ./eap-company-crud
-      Handler: app.get_company_meta
+      Handler: app.crud_handler
       Runtime: python3.8
       Policies:
         - DynamoDBCrudPolicy:
@@ -25,22 +25,44 @@ Resources:
           Properties:
             Path: /company/{company_id}
             Method: GET
-            
-  EAPPutFunction:
-    Type: AWS::Serverless::Function
-    Properties:
-      CodeUri: ./eap-company-crud
-      Handler: app.put_company_meta
-      Runtime: python3.8
-      Policies:
-        - DynamoDBCrudPolicy:
-           TableName: inneedEap
-      Events:
         CompanyPut:
           Type: Api
           Properties:
-            Path: /company/
+            Path: /company
             Method: PUT
+            RestApiId:
+              Ref: EAPApi
+            RequestModel:
+              Model: CompanyMeta
+              Required: true
+            
+  EAPApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName: prod
+      Models:
+        CompanyMeta:
+          type: object
+          required:
+            - name
+            - domain
+            - address
+          properties:
+            name:
+              type: string
+            domain:
+              type: string
+            address:
+              type: string
+              
+      # DefinitionBody:
+      #   swagger: 2.0
+      #   x-amazon-apigateway-request-validators:
+      #     Validate query string parameters and headers:
+      #       validateRequestParameters: true
+      #       validateRequestBody: true
+            
+    
 Outputs:
   ApiUrl:
     Description: "API url of the Prod environment"
