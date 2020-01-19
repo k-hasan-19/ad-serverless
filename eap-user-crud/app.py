@@ -10,26 +10,27 @@ from encoder_class import DecimalEncoder
 
 def crud_handler(event, context):
     if event['httpMethod']=='GET':
-        response = get_company_meta(event, context)
+        response = get_user_meta(event, context)
         return response
     if event['httpMethod']=='PUT':
-        response = put_company_meta(event, context)
+        response = put_user_meta(event, context)
         return response
 
 
 
 
-def get_company_meta(event, context):
+def get_user_meta(event, context):
     
     table = __get_table_client()
-    company_id = event["queryStringParameters"]["id"]
-    PK, SK = _get_company_meta_keys(company_id)
+    company_id = event["queryStringParameters"]["company_id"]
+    user_id = event["queryStringParameters"]["user_id"]
+    PK, SK = _get_user_meta_keys(company_id, user_id)
     print("Key: ", json.dumps({'PK':PK, 'SK':SK}, indent=4))
 
     try:
         data = table.get_item(Key={"PK":PK, "SK":SK}, ReturnConsumedCapacity='TOTAL')
         
-        company_meta_info = _parse_company_details(data["Item"])
+        company_user_info = _parse_user_details(data["Item"])
         
         # response = table.get_item(Key={"PK":"COMPANY#8fd4728b-89b6-40aa-a57a-85a4672ec9a0", "SK":"#METADATA#8fd4728b-89b6-40aa-a57a-85a4672ec9a0"}, ReturnConsumedCapacity='TOTAL')
 
@@ -46,18 +47,18 @@ def get_company_meta(event, context):
         
         
     
-    return _response(200, company_meta_info)
+    return _response(200, company_user_info)
     
 
-def put_company_meta(event, context):
+def put_user_meta(event, context):
     
     table = __get_table_client()
     
     payload = json.loads(event['body'])
     
-    PK, SK, name, domain, address, company_id = _get_company_meta(payload)
+    PK, SK, company_id, user_id, email, first_name, last_name, address, created_at, updated_at = _get_user_meta(payload)
     
-    print(PK, SK, name, domain, address)
+    print(PK, SK, company_id, user_id, email, first_name, last_name, address, created_at, updated_at)
 
     try:
         table.update_item(
@@ -65,22 +66,30 @@ def put_company_meta(event, context):
                 'PK': PK,
                 'SK': SK
             },
-            UpdateExpression='SET #company_name = :company_name_value, #company_domain = :company_domain_value, #company_address = :company_address_value, #company_id = :company_id_value',
+            UpdateExpression='SET #company_id = :company_id, #user_id = :user_id, #email = :email, #first_name = :first_name, #last_name = :last_name, #address = :address, #created_at = :created_at, #updated_at = :updated_at',
             ExpressionAttributeNames={
-                '#company_name': 'name',
-                '#company_domain': 'company_domain',
-                '#company_address': 'address',
-                '#company_id': 'company_id'                
+                '#company_id': 'company_id',
+                '#user_id': 'user_id',
+                '#email': 'email',
+                '#first_name': 'first_name',
+                '#last_name': 'last_name',
+                '#address': 'address',
+                '#created_at':'created_at',
+                '#updated_at':'updated_at'
             },
             ExpressionAttributeValues={
-                ':company_name_value': name,
-                ':company_domain_value': domain,
-                ':company_address_value': address,
-                ':company_id_value': company_id
+                ':company_id': company_id,
+                ':user_id': user_id,
+                ':email': email,
+                ':first_name': first_name,
+                ':last_name': last_name,
+                ':address': address,
+                ':created_at': created_at,
+                ':updated_at': updated_at
             },
             ReturnConsumedCapacity='TOTAL'
         )
-        payload['company_id'] = company_id
+        payload['user_id'] = user_id
         # response = table.get_item(Key={"PK":"COMPANY#8fd4728b-89b6-40aa-a57a-85a4672ec9a0", "SK":"#METADATA#8fd4728b-89b6-40aa-a57a-85a4672ec9a0"}, ReturnConsumedCapacity='TOTAL')
 
     except ClientError as e:
@@ -93,46 +102,53 @@ def put_company_meta(event, context):
         print("PutItem succeeded:")
         print(json.dumps(payload, indent=4, cls=DecimalEncoder))
         
+    if json.loads(event['body']).get('user_id'):
+        return _response(200, payload)
     return _response(201, payload)
     
     
-''' Company info cleaner'''
+''' User info cleaner'''
 
-def _parse_company_details(item):
+def _parse_user_details(item):
     item.pop('PK', None)
     item.pop('SK', None)
     return item
 
-''' Company partition key generator '''
+''' User partition key generator '''
 
-def _get_company_meta(payload):
+def _get_user_meta(payload):
     import uuid
-    
-    if not payload.get('company_id', None):
-        company_id = str(uuid.uuid4())
+    time_now_rfc = _date_time_now()
+    if not payload.get('user_id'):
+        user_id = str(uuid.uuid4())
+        created_at = time_now_rfc
+        updated_at = time_now_rfc
     else:
-        company_id = payload['company_id']
+        user_id = payload['user_id']
+        updated_at = time_now_rfc
+        created_at = payload.get('created_at') if payload.get('created_at') else time_now_rfc
+    company_id = payload['company_id']
     PK = "COMPANY#" + company_id
-    SK = "#METADATA#" + company_id
-    name = payload['name']
-    domain = payload['domain']
-    address = payload['address']
-    return (
-        PK,
-        SK,
-        name,
-        domain,
-        address,
-        company_id,
-    )
+    SK = "USER#" + company_id
+    email = payload['email']
+    first_name = payload['first_name']
+    last_name = payload['last_name']
+    address = payload.get('address')
+    
+    
+    return (PK, SK, company_id, user_id, email, first_name, last_name, address, created_at, updated_at,)
 
-def _get_company_meta_keys(company_id):
+def _get_user_meta_keys(company_id, user_id):
     PK = "COMPANY#" + company_id
-    SK = "#METADATA#" + company_id
+    SK = "USER#" + user_id
     return (
         PK,
         SK
         )
+        
+def _date_time_now():
+    import datetime
+    return str(datetime.datetime.utcnow().isoformat('T'))+'Z'
 # Http response builder
 
 def _response(status_code, json_body):

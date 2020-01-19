@@ -7,7 +7,7 @@ info:
 # https://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-swagger-extensions.html
   title: EAP InNeed API
   description: EAP CRUD & Analytics web service
-  version: '0.1'
+  version: '0.4'
   contact:
     email: kamrul@inneed.cloud
 
@@ -25,11 +25,11 @@ paths:
   /company:
     get:
       tags:
-        - developers
+        - admins
       summary: Returns a Company meta information by ID
       operationId: getCompanyById
       parameters:
-        - name: id
+        - name: company_id
           in: query
           required: true
           description: pass an company id for looking up company meta information
@@ -69,7 +69,13 @@ paths:
         description: Company information to add
       responses:
         '200':
-          description: 'Company created or updated'
+          description: 'Company updated'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Company'
+        '201':
+          description: 'Company created'
           content:
             application/json:
               schema:
@@ -81,6 +87,164 @@ paths:
       x-amazon-apigateway-integration:
         uri:
           Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${EAPPutCompanyFunction.Arn}/invocations
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_TEMPLATES
+        contentHandling: CONVERT_TO_TEXT
+        type: aws_proxy
+      x-amazon-apigateway-request-validator: basic
+      
+  /user:
+    get:
+      tags:
+        - admins
+      summary: Returns a User meta information by ID
+      operationId: getUserById
+      parameters:
+        - name: company_id
+          in: query
+          required: true
+          description: pass an company id for looking up relevant user meta information
+          schema:
+            type : string
+            format: uuid
+        - name: user_id
+          in: query
+          required: true
+          description: pass an user id for looking up user meta information
+          schema:
+            type : string
+            format: uuid
+      responses:
+        '200':    # status code
+          description: A JSON object of user meta information
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '400':
+          description: Bad input parameters
+          
+      x-amazon-apigateway-integration:
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${EAPGetUserFunction.Arn}/invocations
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_TEMPLATES
+        contentHandling: CONVERT_TO_TEXT
+        type: aws_proxy
+      x-amazon-apigateway-request-validator: basic
+
+    put:
+      tags:
+        - admins
+      summary: Creates a new User.
+      operationId: addUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+        description: User information to add
+      responses:
+        '200':
+          description: 'User updated'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '201':
+          description: 'User created'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          
+        '400':
+          description: 'Invalid input'
+        '409':
+          description: 'User already exists'
+      x-amazon-apigateway-integration:
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${EAPPutUserFunction.Arn}/invocations
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_TEMPLATES
+        contentHandling: CONVERT_TO_TEXT
+        type: aws_proxy
+      x-amazon-apigateway-request-validator: basic
+      
+  /post:
+    get:
+      tags:
+        - users
+      summary: Returns a Post information by ID
+      operationId: getPostById
+      parameters:
+        - name: company_id
+          in: query
+          required: true
+          description: pass a company id for looking up relevant Post details
+          schema:
+            type : string
+            format: uuid
+        - name: post_id
+          in: query
+          required: true
+          description: pass a post id for looking up Post details
+          schema:
+            type : string
+            format: uuid
+      responses:
+        '200':    # status code
+          description: A JSON object of user meta information
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Post'
+        '400':
+          description: Bad input parameters
+          
+      x-amazon-apigateway-integration:
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${EAPGetPostFunction.Arn}/invocations
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_TEMPLATES
+        contentHandling: CONVERT_TO_TEXT
+        type: aws_proxy
+      x-amazon-apigateway-request-validator: basic
+
+    put:
+      tags:
+        - users
+      summary: Creates a new Post.
+      operationId: addPost
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Post'
+        description: Post details to add
+      responses:
+        '200':
+          description: 'Post updated'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Post'
+        '201':
+          description: 'Post created'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Post'
+          
+        '400':
+          description: 'Invalid input'
+        '409':
+          description: 'Post already exists'
+      x-amazon-apigateway-integration:
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${EAPPutPostFunction.Arn}/invocations
         httpMethod: POST
         passthroughBehavior: WHEN_NO_TEMPLATES
         contentHandling: CONVERT_TO_TEXT
@@ -103,8 +267,100 @@ components:
           format: hostname
         address:
           type: string
-      # Both properties are required
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
       required:
         - name
         - domain
         - address
+        
+    User:
+      properties:
+        company_id:
+          type: string
+          format: uuid
+        user_id:
+          type: string
+          format: uuid
+        email:
+          type: string
+          format: email
+        first_name:
+          type: string
+          minLength: 3
+          maxLength: 10
+        last_name:
+          type: string
+          minLength: 3
+          maxLength: 10
+        address:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+        is_admin:
+          type: boolean
+      required:
+        - company_id
+        - email
+        - first_name
+        - last_name
+        - is_admin
+    Post:
+      properties:
+        company_id:
+          type: string
+          format: uuid
+        user_id:
+          type: string
+          format: uuid
+        post_id:
+          type: string
+          format: uuid
+        post_title:
+          type: string
+          minLength: 3
+          maxLength: 60
+        post_content:
+          type: string
+        can_share_on:
+          $ref: '#/components/schemas/CanShareOnArray'
+        points_map:
+          $ref: '#/components/schemas/PointsMap'
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+      
+      required:
+        - company_id
+        - user_id
+        - post_title
+        - post_content
+    CanShareOnArray:
+      type: array
+      items:
+        $ref: '#/components/schemas/CanShareOn'
+    CanShareOn:
+      type: string
+      enum: [TWITTER, FACEBOOK, LINKEDIN]
+    PointsMap:
+      type: object
+      properties:
+        TWITTER:
+          type: integer
+        FACEBOOK:
+          type: integer
+        LINKEDIN:
+          type: integer
+        # $ref: '#/components/schemas/CanShareOn'
+      additionalProperties: false

@@ -10,26 +10,27 @@ from encoder_class import DecimalEncoder
 
 def crud_handler(event, context):
     if event['httpMethod']=='GET':
-        response = get_company_meta(event, context)
+        response = get_post_meta(event, context)
         return response
     if event['httpMethod']=='PUT':
-        response = put_company_meta(event, context)
+        response = put_post_meta(event, context)
         return response
 
 
 
 
-def get_company_meta(event, context):
+def get_post_meta(event, context):
     
     table = __get_table_client()
     company_id = event["queryStringParameters"]["company_id"]
-    PK, SK = _get_company_meta_keys(company_id)
+    post_id = event["queryStringParameters"]["post_id"]
+    PK, SK = _get_post_meta_keys(company_id, post_id)
     print("Key: ", json.dumps({'PK':PK, 'SK':SK}, indent=4))
 
     try:
         data = table.get_item(Key={"PK":PK, "SK":SK}, ReturnConsumedCapacity='TOTAL')
         
-        company_meta_info = _parse_company_details(data["Item"])
+        post_info = _parse_post_details(data["Item"])
         
         # response = table.get_item(Key={"PK":"COMPANY#8fd4728b-89b6-40aa-a57a-85a4672ec9a0", "SK":"#METADATA#8fd4728b-89b6-40aa-a57a-85a4672ec9a0"}, ReturnConsumedCapacity='TOTAL')
 
@@ -46,18 +47,18 @@ def get_company_meta(event, context):
         
         
     
-    return _response(200, company_meta_info)
+    return _response(200, post_info)
     
 
-def put_company_meta(event, context):
+def put_post_meta(event, context):
     
     table = __get_table_client()
     
     payload = json.loads(event['body'])
     
-    PK, SK, name, domain, address, company_id, created_at, updated_at = _get_company_meta(payload)
+    PK, SK, company_id, user_id, post_id, post_title, post_content, can_share_on, points_map, created_at, updated_at = _get_post_meta(payload)
     
-    print(PK, SK, name, domain, address, created_at, updated_at)
+    print(PK, SK, company_id, user_id, post_id, post_title, post_content, can_share_on, points_map, created_at, updated_at)
 
     try:
         table.update_item(
@@ -65,27 +66,32 @@ def put_company_meta(event, context):
                 'PK': PK,
                 'SK': SK
             },
-            UpdateExpression='SET #company_name = :company_name, #company_domain = :company_domain, #company_address = :company_address, #company_id = :company_id, #created_at = :created_at, #updated_at = :updated_at',
+            UpdateExpression='SET #company_id = :company_id, #user_id = :user_id, #post_id = :post_id, #post_title = :post_title, #post_content = :post_content, #can_share_on = :can_share_on, #points_map = :points_map, #created_at = :created_at, #updated_at = :updated_at',
             ExpressionAttributeNames={
-                '#company_name': 'name',
-                '#company_domain': 'company_domain',
-                '#company_address': 'address',
                 '#company_id': 'company_id',
+                '#user_id': 'user_id',
+                '#post_id': 'post_id',
+                '#post_title': 'post_title',
+                '#post_content': 'post_content',
+                '#can_share_on': 'can_share_on',
+                '#points_map': 'points_map',
                 '#created_at':'created_at',
                 '#updated_at':'updated_at'
             },
             ExpressionAttributeValues={
-                ':company_name': name,
-                ':company_domain': domain,
-                ':company_address': address,
                 ':company_id': company_id,
-                ':created_at': created_at,
-                ':updated_at': updated_at
+                ':user_id': user_id,
+                ':post_id': post_id,
+                ':post_title': post_title,
+                ':post_content': post_content,
+                ':can_share_on': can_share_on,
+                ':points_map': points_map,
+                ':created_at':created_at,
+                ':updated_at':updated_at
             },
             ReturnConsumedCapacity='TOTAL'
         )
-        payload['company_id'] = company_id
-        # response = table.get_item(Key={"PK":"COMPANY#8fd4728b-89b6-40aa-a57a-85a4672ec9a0", "SK":"#METADATA#8fd4728b-89b6-40aa-a57a-85a4672ec9a0"}, ReturnConsumedCapacity='TOTAL')
+        payload['post_id'] = post_id
 
     except ClientError as e:
         print(e.response['Error']['Message'])
@@ -97,50 +103,46 @@ def put_company_meta(event, context):
         print("PutItem succeeded:")
         print(json.dumps(payload, indent=4, cls=DecimalEncoder))
         
-    if json.loads(event['body']).get('company_id'):
+    if json.loads(event['body']).get('post_id'):
         return _response(200, payload)
     return _response(201, payload)
     
     
-''' Company info cleaner'''
+''' Post info cleaner'''
 
-def _parse_company_details(item):
+def _parse_post_details(item):
     item.pop('PK', None)
     item.pop('SK', None)
     return item
 
-''' Company partition key generator '''
+''' Post partition key generator '''
 
-def _get_company_meta(payload):
+def _get_post_meta(payload):
     import uuid
     time_now_rfc = _date_time_now()
-    if not payload.get('company_id'):
-        company_id = str(uuid.uuid4())
+    if not payload.get('post_id'):
+        post_id = str(uuid.uuid4())
         created_at = time_now_rfc
         updated_at = time_now_rfc
     else:
-        company_id = payload['company_id']
+        post_id = payload['post_id']
         updated_at = time_now_rfc
         created_at = payload.get('created_at') if payload.get('created_at') else time_now_rfc
+    company_id = payload['company_id']
+    user_id = payload['user_id']
     PK = "COMPANY#" + company_id
-    SK = "#METADATA#" + company_id
-    name = payload['name']
-    domain = payload['domain']
-    address = payload['address']
-    return (
-        PK,
-        SK,
-        name,
-        domain,
-        address,
-        company_id,
-        created_at,
-        updated_at
-    )
+    SK = "POST#" + post_id
+    post_title = payload['post_title']
+    post_content = payload['post_content']
+    can_share_on = payload.get('can_share_on')
+    points_map = payload.get('points_map')
+    
+    
+    return (PK, SK, company_id, user_id, post_id, post_title, post_content, can_share_on, points_map, created_at, updated_at,)
 
-def _get_company_meta_keys(company_id):
+def _get_post_meta_keys(company_id, post_id):
     PK = "COMPANY#" + company_id
-    SK = "#METADATA#" + company_id
+    SK = "POST#" + post_id
     return (
         PK,
         SK
@@ -152,7 +154,7 @@ def _date_time_now():
 # Http response builder
 
 def _response(status_code, json_body):
-    body = json.dumps(json_body)
+    body = json.dumps(json_body, cls=DecimalEncoder)
 
     return {
         "statusCode": status_code,
