@@ -7,7 +7,7 @@ info:
 # https://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-swagger-extensions.html
   title: EAP InNeed API
   description: EAP CRUD & Analytics web service
-  version: '0.4'
+  version: '0.5'
   contact:
     email: kamrul@inneed.cloud
 
@@ -25,7 +25,7 @@ paths:
   /company:
     get:
       tags:
-        - admins
+        - companies
       summary: Returns a Company meta information by ID
       operationId: getCompanyById
       parameters:
@@ -57,7 +57,7 @@ paths:
 
     put:
       tags:
-        - admins
+        - companies
       summary: Creates a new Company.
       operationId: addCompany
       requestBody:
@@ -96,7 +96,7 @@ paths:
   /user:
     get:
       tags:
-        - admins
+        - users
       summary: Returns a User meta information by ID
       operationId: getUserById
       parameters:
@@ -135,7 +135,7 @@ paths:
 
     put:
       tags:
-        - admins
+        - users
       summary: Creates a new User.
       operationId: addUser
       requestBody:
@@ -175,7 +175,7 @@ paths:
   /post:
     get:
       tags:
-        - users
+        - posts
       summary: Returns a Post information by ID
       operationId: getPostById
       parameters:
@@ -214,7 +214,7 @@ paths:
 
     put:
       tags:
-        - users
+        - posts
       summary: Creates a new Post.
       operationId: addPost
       requestBody:
@@ -245,6 +245,38 @@ paths:
       x-amazon-apigateway-integration:
         uri:
           Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${EAPPutPostFunction.Arn}/invocations
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_TEMPLATES
+        contentHandling: CONVERT_TO_TEXT
+        type: aws_proxy
+      x-amazon-apigateway-request-validator: basic
+      
+  /share:
+    post:
+      tags:
+        - share
+      summary: Posts users post share event
+      operationId: sharePost
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PostShare'
+        description: Share event details to add
+      responses:
+        '201':
+          description: 'Share event created'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PostShare'
+          
+        '400':
+          description: 'Invalid input'
+      x-amazon-apigateway-integration:
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${EAPPostShareEventFunction.Arn}/invocations
         httpMethod: POST
         passthroughBehavior: WHEN_NO_TEMPLATES
         contentHandling: CONVERT_TO_TEXT
@@ -340,12 +372,36 @@ components:
         updated_at:
           type: string
           format: date-time
-      
       required:
         - company_id
         - user_id
         - post_title
         - post_content
+    PostShare:
+      properties:
+        company_id:
+          type: string
+          format: uuid
+        user_id:
+          type: string
+          format: uuid
+        post_id:
+          type: string
+          format: uuid
+        points:
+          type: integer
+        shared_on:
+          $ref: '#/components/schemas/CanShareOn'
+        created_at:
+          type: string
+          format: date-time
+      required:
+        - company_id
+        - user_id
+        - post_id
+        - points
+        - shared_on
+
     CanShareOnArray:
       type: array
       items:

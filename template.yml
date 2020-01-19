@@ -14,7 +14,7 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       FunctionName: eap-get-company
-      CodeUri: ./eap-company-crud
+      CodeUri: ./company-crud
       Handler: app.get_company_meta
       Runtime: python3.8
       Policies:
@@ -35,7 +35,7 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       FunctionName: eap-put-company
-      CodeUri: ./eap-company-crud
+      CodeUri: ./company-crud
       Handler: app.put_company_meta
       Runtime: python3.8
       Policies:
@@ -54,7 +54,7 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       FunctionName: eap-get-user
-      CodeUri: ./eap-user-crud
+      CodeUri: ./user-crud
       Handler: app.get_user_meta
       Runtime: python3.8
       Policies:
@@ -74,7 +74,7 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       FunctionName: eap-put-user
-      CodeUri: ./eap-user-crud
+      CodeUri: ./user-crud
       Handler: app.put_user_meta
       Runtime: python3.8
       Policies:
@@ -92,7 +92,7 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       FunctionName: eap-get-post
-      CodeUri: ./eap-post-crud
+      CodeUri: ./post-crud
       Handler: app.get_post_meta
       Runtime: python3.8
       Policies:
@@ -112,7 +112,7 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       FunctionName: eap-put-post
-      CodeUri: ./eap-post-crud
+      CodeUri: ./post-crud
       Handler: app.put_post_meta
       Runtime: python3.8
       Policies:
@@ -124,6 +124,25 @@ Resources:
           Properties:
             Path: /post
             Method: PUT
+            RestApiId:
+              Ref: EAPApi
+              
+  EAPPostShareEventFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: eap-post-share
+      CodeUri: ./share-post
+      Handler: app.post_share
+      Runtime: python3.8
+      Policies:
+        - DynamoDBCrudPolicy:
+           TableName: inneedEap
+      Events:
+        UserPut:
+          Type: Api
+          Properties:
+            Path: /share
+            Method: POST
             RestApiId:
               Ref: EAPApi
             

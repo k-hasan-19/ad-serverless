@@ -56,9 +56,9 @@ def put_user_meta(event, context):
     
     payload = json.loads(event['body'])
     
-    PK, SK, company_id, user_id, email, first_name, last_name, address, created_at, updated_at = _get_user_meta(payload)
+    PK, SK, company_id, user_id, email, first_name, last_name, address, is_admin, created_at, updated_at = _get_user_meta(payload)
     
-    print(PK, SK, company_id, user_id, email, first_name, last_name, address, created_at, updated_at)
+    print(PK, SK, company_id, user_id, email, first_name, last_name, address, is_admin, created_at, updated_at)
 
     try:
         table.update_item(
@@ -66,7 +66,7 @@ def put_user_meta(event, context):
                 'PK': PK,
                 'SK': SK
             },
-            UpdateExpression='SET #company_id = :company_id, #user_id = :user_id, #email = :email, #first_name = :first_name, #last_name = :last_name, #address = :address, #created_at = :created_at, #updated_at = :updated_at',
+            UpdateExpression='SET #company_id = :company_id, #user_id = :user_id, #email = :email, #first_name = :first_name, #last_name = :last_name, #address = :address, #is_admin = :is_admin, #created_at = :created_at, #updated_at = :updated_at',
             ExpressionAttributeNames={
                 '#company_id': 'company_id',
                 '#user_id': 'user_id',
@@ -74,6 +74,7 @@ def put_user_meta(event, context):
                 '#first_name': 'first_name',
                 '#last_name': 'last_name',
                 '#address': 'address',
+                '#is_admin': 'is_admin',
                 '#created_at':'created_at',
                 '#updated_at':'updated_at'
             },
@@ -84,6 +85,7 @@ def put_user_meta(event, context):
                 ':first_name': first_name,
                 ':last_name': last_name,
                 ':address': address,
+                ':is_admin': is_admin,
                 ':created_at': created_at,
                 ':updated_at': updated_at
             },
@@ -134,9 +136,10 @@ def _get_user_meta(payload):
     first_name = payload['first_name']
     last_name = payload['last_name']
     address = payload.get('address')
+    is_admin = payload['is_admin']
     
     
-    return (PK, SK, company_id, user_id, email, first_name, last_name, address, created_at, updated_at,)
+    return (PK, SK, company_id, user_id, email, first_name, last_name, address, is_admin, created_at, updated_at,)
 
 def _get_user_meta_keys(company_id, user_id):
     PK = "COMPANY#" + company_id
