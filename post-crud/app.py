@@ -66,7 +66,7 @@ def put_post_meta(event, context):
                 'PK': PK,
                 'SK': SK
             },
-            UpdateExpression='SET #company_id = :company_id, #user_id = :user_id, #post_id = :post_id, #post_title = :post_title, #post_content = :post_content, #can_share_on = :can_share_on, #points_map = :points_map, #created_at = :created_at, #updated_at = :updated_at',
+            UpdateExpression='SET #company_id = :company_id, #user_id = :user_id, #post_id = :post_id, #post_title = :post_title, #post_content = :post_content, #can_share_on = :can_share_on, #points_map = :points_map, #created_at = if_not_exists(#created_at, :created_at), #updated_at = :updated_at',
             ExpressionAttributeNames={
                 '#company_id': 'company_id',
                 '#user_id': 'user_id',
@@ -127,7 +127,7 @@ def _get_post_meta(payload):
     else:
         post_id = payload['post_id']
         updated_at = time_now_rfc
-        created_at = payload.get('created_at') if payload.get('created_at') else time_now_rfc
+        created_at = payload.get('created_at')
     company_id = payload['company_id']
     user_id = payload['user_id']
     PK = "COMPANY#" + company_id

@@ -66,7 +66,7 @@ def put_user_meta(event, context):
                 'PK': PK,
                 'SK': SK
             },
-            UpdateExpression='SET #company_id = :company_id, #user_id = :user_id, #email = :email, #first_name = :first_name, #last_name = :last_name, #address = :address, #is_admin = :is_admin, #created_at = :created_at, #updated_at = :updated_at',
+            UpdateExpression='SET #company_id = :company_id, #user_id = :user_id, #email = :email, #first_name = :first_name, #last_name = :last_name, #address = :address, #is_admin = :is_admin, #created_at = if_not_exists(#created_at, :created_at), #updated_at = :updated_at',
             ExpressionAttributeNames={
                 '#company_id': 'company_id',
                 '#user_id': 'user_id',
@@ -128,7 +128,7 @@ def _get_user_meta(payload):
     else:
         user_id = payload['user_id']
         updated_at = time_now_rfc
-        created_at = payload.get('created_at') if payload.get('created_at') else time_now_rfc
+        created_at = payload.get('created_at')
     company_id = payload['company_id']
     PK = "COMPANY#" + company_id
     SK = "USER#" + company_id
