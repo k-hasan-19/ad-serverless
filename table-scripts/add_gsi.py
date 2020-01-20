@@ -1,6 +1,6 @@
 import boto3
 
-dynamodb = boto3.client('dynamodb', region_name='us-west-2')
+dynamodb = boto3.client('dynamodb')
 
 try:
     dynamodb.update_table(
@@ -33,8 +33,8 @@ try:
                         "ProjectionType": "ALL"
                     },
                     "ProvisionedThroughput": {
-                        "ReadCapacityUnits": 5,
-                        "WriteCapacityUnits": 5
+                        "ReadCapacityUnits": 10,
+                        "WriteCapacityUnits": 10
                     }
                 }
             }
