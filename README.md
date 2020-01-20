@@ -10,6 +10,7 @@ python ./table-scripts/add_gsi.py
 ```
 ### TODO
 
+- [ ] Integrate existing front end 
 - [ ] POST endpoints for CRUD
 - [ ] Social Media credential GET/POST end points
 - [ ] Top score endpoint
