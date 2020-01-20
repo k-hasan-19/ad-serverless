@@ -3,5 +3,5 @@
 
 ## Deployment
 ```
-sam deploy --guided
+sam deploy --stack-name inneed-eap --capabilities CAPABILITY_IAM
 ```
