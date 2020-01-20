@@ -8,6 +8,7 @@ sam deploy --stack-name inneed-eap --capabilities CAPABILITY_IAM
 python ./table-scripts/create_table.py
 python ./table-scripts/add_gsi.py
 ```
+[API endpoint details](./eap-openapi.yml)
 ### TODO
 
 - [ ] Integrate existing front end 
