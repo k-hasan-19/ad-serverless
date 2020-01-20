@@ -7,7 +7,7 @@ info:
 # https://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-swagger-extensions.html
   title: EAP InNeed API
   description: EAP CRUD & Analytics web service
-  version: '0.5'
+  version: '0.8'
   contact:
     email: kamrul@inneed.cloud
 
@@ -251,6 +251,83 @@ paths:
         type: aws_proxy
       x-amazon-apigateway-request-validator: basic
       
+  /postsByCompany:
+    get:
+      tags:
+        - posts
+      summary: Returns recent Posts details by a company
+      operationId: getPostsByCompany
+      parameters:
+        - name: company_id
+          in: query
+          required: true
+          description: pass a company id for looking up relevant Posts details
+          schema:
+            type : string
+            format: uuid
+      responses:
+        '200':    # status code
+          description: A array posts meta information
+          content:
+            application/json:
+              schema:
+                type : array
+                items:
+                  $ref: "#/components/schemas/Post"
+        '400':
+          description: Bad input parameters
+          
+      x-amazon-apigateway-integration:
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${EAPGetCompanyPostsFunction.Arn}/invocations
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_TEMPLATES
+        contentHandling: CONVERT_TO_TEXT
+        type: aws_proxy
+      x-amazon-apigateway-request-validator: basic
+      
+  /postsByAdminUser:
+    get:
+      tags:
+        - posts
+      summary: Returns recent Posts details by admin user id
+      operationId: getPostsByAdminUser
+      parameters:
+        - name: company_id
+          in: query
+          required: true
+          description: pass a company id for looking up relevant Posts details
+          schema:
+            type : string
+            format: uuid
+        - name: user_id
+          in: query
+          required: true
+          description: pass a user id for looking up Posts details
+          schema:
+            type : string
+            format: uuid
+      responses:
+        '200':    # status code
+          description: A array posts meta information
+          content:
+            application/json:
+              schema:
+                type : array
+                items:
+                  $ref: "#/components/schemas/Post"
+        '400':
+          description: Bad input parameters
+          
+      x-amazon-apigateway-integration:
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${EAPGetAdminPostsFunction.Arn}/invocations
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_TEMPLATES
+        contentHandling: CONVERT_TO_TEXT
+        type: aws_proxy
+      x-amazon-apigateway-request-validator: basic
+      
   /share:
     post:
       tags:
@@ -282,6 +359,95 @@ paths:
         contentHandling: CONVERT_TO_TEXT
         type: aws_proxy
       x-amazon-apigateway-request-validator: basic
+      
+  /postShareDetailsForUser:
+    get:
+      tags:
+        - share-details
+      summary: Returns post share details for a user
+      operationId: getPostShareDetailsForUser
+      parameters:
+        - name: company_id
+          in: query
+          required: true
+          description: pass a company id for looking up relevant Post share details for the user id
+          schema:
+            type : string
+            format: uuid
+        - name: post_id
+          in: query
+          required: true
+          description: pass a post id for looking up Post share details for the user id
+          schema:
+            type : string
+            format: uuid
+        - name: user_id
+          in: query
+          required: true
+          description: pass a user id for looking up Post share details for the user
+          schema:
+            type : string
+            format: uuid
+      responses:
+        '200':    # status code
+          description: A object of post share meta information for the user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PostShareDetails"
+        '400':
+          description: Bad input parameters
+          
+      x-amazon-apigateway-integration:
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${EAPPostShareDetailsForUserFunction.Arn}/invocations
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_TEMPLATES
+        contentHandling: CONVERT_TO_TEXT
+        type: aws_proxy
+      x-amazon-apigateway-request-validator: basic
+      
+  /postShareAnalytics:
+    get:
+      tags:
+        - share-details
+      summary: Returns post share analytics for a admin user
+      operationId: getPostShareAnalytics
+      parameters:
+        - name: company_id
+          in: query
+          required: true
+          description: pass a company id for looking up relevant Post share analytics for the admin user id
+          schema:
+            type : string
+            format: uuid
+        - name: post_id
+          in: query
+          required: true
+          description: pass a post id for looking up Post share analytics for the admin user id
+          schema:
+            type : string
+            format: uuid
+      responses:
+        '200':    # status code
+          description: A object of post share analytics information for the admin user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PostShareAnalytics"
+        '400':
+          description: Bad input parameters
+          
+      x-amazon-apigateway-integration:
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${EAPPostShareAnalyticsFunction.Arn}/invocations
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_TEMPLATES
+        contentHandling: CONVERT_TO_TEXT
+        type: aws_proxy
+      x-amazon-apigateway-request-validator: basic
+      
+  
 
 components:
   schemas:
@@ -369,6 +535,9 @@ components:
         created_at:
           type: string
           format: date-time
+        post_created_at:
+          type: integer
+          description: NoSQL GSI
         updated_at:
           type: string
           format: date-time
@@ -392,15 +561,31 @@ components:
           type: integer
         shared_on:
           $ref: '#/components/schemas/CanShareOn'
-        created_at:
-          type: string
-          format: date-time
       required:
         - company_id
         - user_id
         - post_id
         - points
         - shared_on
+        
+    PostShareAnalytics:
+      type: object
+      properties:
+        post_id:
+          type: string
+          format: uuid
+        total_share:
+          $ref: '#/components/schemas/PointsMap'
+        
+    PostShareDetails:
+      type : object
+      properties:
+        post_id:
+          type: string
+          format: uuid
+        shared_on:
+          $ref: "#/components/schemas/CanShareOnArray"
+        
 
     CanShareOnArray:
       type: array

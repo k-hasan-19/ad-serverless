@@ -107,6 +107,44 @@ Resources:
             RestApiId:
               Ref: EAPApi
               
+  EAPGetCompanyPostsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: eap-get-posts-by-company
+      CodeUri: ./company-posts
+      Handler: app.get_company_posts
+      Runtime: python3.8
+      Policies:
+        - DynamoDBCrudPolicy:
+           TableName: inneedEap
+      Events:
+        UserGet:
+          Type: Api
+          Properties:
+            Path: /postsByCompany
+            Method: GET
+            RestApiId:
+              Ref: EAPApi
+              
+  EAPGetAdminPostsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: eap-get-posts-by-admin
+      CodeUri: ./admin-posts
+      Handler: app.get_admin_posts
+      Runtime: python3.8
+      Policies:
+        - DynamoDBCrudPolicy:
+           TableName: inneedEap
+      Events:
+        UserGet:
+          Type: Api
+          Properties:
+            Path: /postsByAdminUser
+            Method: GET
+            RestApiId:
+              Ref: EAPApi
+              
   
   EAPPutPostFunction:
     Type: AWS::Serverless::Function
@@ -143,6 +181,44 @@ Resources:
           Properties:
             Path: /share
             Method: POST
+            RestApiId:
+              Ref: EAPApi
+              
+  EAPPostShareDetailsForUserFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: eap-post-share-details-for-user
+      CodeUri: ./post-share-details-for-user
+      Handler: app.post_share_details
+      Runtime: python3.8
+      Policies:
+        - DynamoDBCrudPolicy:
+           TableName: inneedEap
+      Events:
+        UserPut:
+          Type: Api
+          Properties:
+            Path: /postShareDetailsForUser
+            Method: GET
+            RestApiId:
+              Ref: EAPApi
+              
+  EAPPostShareAnalyticsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: eap-post-share-analytics
+      CodeUri: ./post-share-analytics
+      Handler: app.post_share_analytics
+      Runtime: python3.8
+      Policies:
+        - DynamoDBCrudPolicy:
+           TableName: inneedEap
+      Events:
+        UserPut:
+          Type: Api
+          Properties:
+            Path: /postShareAnalytics
+            Method: GET
             RestApiId:
               Ref: EAPApi
             

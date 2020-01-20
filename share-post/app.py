@@ -13,7 +13,7 @@ from encoder_class import DecimalEncoder
 def post_share(event, context):
     
     table = __get_table_client()
-
+    SOCIAL_ENUMS = _get_social_enums()
     payload = json.loads(event['body'])
     
     PK, SK = _get_share_keys(payload)
@@ -21,6 +21,7 @@ def post_share(event, context):
     print(PK, SK, created_at, payload)
     
     item = dict(payload)
+    assert item['shared_on'] in SOCIAL_ENUMS
     item['PK'] = PK
     item['SK'] = SK
     item['created_at'] = created_at
@@ -45,15 +46,23 @@ def post_share(event, context):
 def _get_share_keys(payload):
     # company_id, user_id, post_id, shared_on
     PK = "COMPANY#" + payload['company_id']
-    SK = "POST_RELATION#"+payload['post_id']+"#"+payload['shared_on']+"#"+payload['user_id']
+    SK = "POST_SHARE#"+payload['post_id']+"#"+payload['user_id']+"#"+payload['shared_on']
     return (
         PK,
         SK
         )
         
+def _get_social_enums():
+    return (
+        'TWITTER',
+        'FACEBOOK',
+        'LINKEDIN'
+        )
+
 def _date_time_now():
     import datetime
     return str(datetime.datetime.utcnow().isoformat('T'))+'Z'
+    
 # Http response builder
 
 def _response(status_code, json_body):
