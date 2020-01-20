@@ -3,5 +3,5 @@
 
 ## Deployment
 ```
-sam deploy
+sam deploy --guided
 ```
