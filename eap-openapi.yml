@@ -452,16 +452,6 @@ paths:
 components:
   schemas:
 
-    Common:
-      type: object
-      properties:
-        created_at:
-          type: string
-          format: date-time
-        updated_at:
-          type: string
-          format: date-time
-
     Company:
       allOf:
         - type: object
@@ -552,6 +542,7 @@ components:
         - user_id
         - post_title
         - post_content
+
     PostShare:
       properties:
         company_id:
@@ -591,15 +582,16 @@ components:
           format: uuid
         shared_on:
           $ref: "#/components/schemas/CanShareOnArray"
-        
 
     CanShareOnArray:
       type: array
       items:
         $ref: '#/components/schemas/CanShareOn'
+
     CanShareOn:
       type: string
       enum: [TWITTER, FACEBOOK, LINKEDIN]
+
     PointsMap:
       type: object
       properties:
@@ -611,3 +603,13 @@ components:
           type: integer
         # $ref: '#/components/schemas/CanShareOn'
       additionalProperties: false
+
+    Common:
+      type: object
+      properties:
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
