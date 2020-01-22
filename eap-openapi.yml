@@ -451,66 +451,72 @@ paths:
 
 components:
   schemas:
-    Company:
+
+    Common:
+      type: object
       properties:
-        company_id:
-          type: string
-          format: uuid
-        name:
-          type: string
-          minLength: 3
-          maxLength: 40
-        domain:
-          type: string
-          format: hostname
-        address:
-          type: string
         created_at:
           type: string
           format: date-time
         updated_at:
           type: string
           format: date-time
-      required:
-        - name
-        - domain
-        - address
+
+    Company:
+      allOf:
+        - type: object
+          properties:
+            company_id:
+              type: string
+              format: uuid
+            name:
+              type: string
+              minLength: 3
+              maxLength: 40
+            domain:
+              type: string
+              format: hostname
+            address:
+              type: string
+        - $ref: '#/components/schemas/Common'
+          required:
+            - name
+            - domain
+            - address
         
     User:
-      properties:
-        company_id:
-          type: string
-          format: uuid
-        user_id:
-          type: string
-          format: uuid
-        email:
-          type: string
-          format: email
-        first_name:
-          type: string
-          minLength: 3
-          maxLength: 10
-        last_name:
-          type: string
-          minLength: 3
-          maxLength: 10
-        address:
-          type: string
-        created_at:
-          type: string
-          format: date-time
-        updated_at:
-          type: string
-          format: date-time
-        is_admin:
-          type: boolean
-      required:
-        - company_id
-        - email
-        - first_name
-        - last_name
-        - is_admin
+     allOf:
+        - type: object
+          properties:
+            company_id:
+              type: string
+              format: uuid
+            user_id:
+              type: string
+              format: uuid
+            email:
+              type: string
+              format: email
+            first_name:
+              type: string
+              minLength: 3
+              maxLength: 10
+            last_name:
+              type: string
+              minLength: 3
+              maxLength: 10
+            address:
+              type: string
+            is_admin:
+              type: boolean
+        - $ref: '#/components/schemas/Common'
+          required:
+            - company_id
+            - email
+            - first_name
+            - last_name
+            - is_admin
+
     Post:
       properties:
         company_id:
