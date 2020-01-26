@@ -7,7 +7,7 @@ info:
 # https://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-swagger-extensions.html
   title: EAP InNeed API
   description: EAP CRUD & Analytics web service
-  version: '0.8'
+  version: '0.9.2'
   contact:
     email: kamrul@inneed.cloud
 
@@ -451,66 +451,63 @@ paths:
 
 components:
   schemas:
+
     Company:
-      properties:
-        company_id:
-          type: string
-          format: uuid
-        name:
-          type: string
-          minLength: 3
-          maxLength: 40
-        domain:
-          type: string
-          format: hostname
-        address:
-          type: string
-        created_at:
-          type: string
-          format: date-time
-        updated_at:
-          type: string
-          format: date-time
-      required:
-        - name
-        - domain
-        - address
+      allOf:
+        - type: object
+          properties:
+            company_id:
+              type: string
+              format: uuid
+            name:
+              type: string
+              minLength: 3
+              maxLength: 40
+            domain:
+              type: string
+              format: hostname
+            address:
+              type: string
+          required:
+            - name
+            - domain
+            - address
+        - $ref: '#/components/schemas/Common'
+          
         
     User:
-      properties:
-        company_id:
-          type: string
-          format: uuid
-        user_id:
-          type: string
-          format: uuid
-        email:
-          type: string
-          format: email
-        first_name:
-          type: string
-          minLength: 3
-          maxLength: 10
-        last_name:
-          type: string
-          minLength: 3
-          maxLength: 10
-        address:
-          type: string
-        created_at:
-          type: string
-          format: date-time
-        updated_at:
-          type: string
-          format: date-time
-        is_admin:
-          type: boolean
-      required:
-        - company_id
-        - email
-        - first_name
-        - last_name
-        - is_admin
+     allOf:
+        - type: object
+          properties:
+            company_id:
+              type: string
+              format: uuid
+            user_id:
+              type: string
+              format: uuid
+            email:
+              type: string
+              format: email
+            first_name:
+              type: string
+              minLength: 3
+              maxLength: 10
+            last_name:
+              type: string
+              minLength: 3
+              maxLength: 10
+            address:
+              type: string
+            is_admin:
+              type: boolean
+          required:
+            - company_id
+            - email
+            - first_name
+            - last_name
+            - is_admin
+        - $ref: '#/components/schemas/Common'
+
     Post:
       properties:
         company_id:
@@ -546,6 +543,7 @@ components:
         - user_id
         - post_title
         - post_content
+
     PostShare:
       properties:
         company_id:
@@ -585,15 +583,16 @@ components:
           format: uuid
         shared_on:
           $ref: "#/components/schemas/CanShareOnArray"
-        
 
     CanShareOnArray:
       type: array
       items:
         $ref: '#/components/schemas/CanShareOn'
+
     CanShareOn:
       type: string
       enum: [TWITTER, FACEBOOK, LINKEDIN]
+
     PointsMap:
       type: object
       properties:
@@ -605,3 +604,13 @@ components:
           type: integer
         # $ref: '#/components/schemas/CanShareOn'
       additionalProperties: false
+
+    Common:
+      type: object
+      properties:
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
