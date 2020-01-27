@@ -7,7 +7,7 @@ info:
 # https://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-swagger-extensions.html
   title: EAP InNeed API
   description: EAP CRUD & Analytics web service
-  version: '0.9.2'
+  version: '0.10.1'
   contact:
     email: kamrul@inneed.cloud
 
@@ -26,16 +26,16 @@ paths:
     get:
       tags:
         - companies
-      summary: Returns a Company meta information by ID
-      operationId: getCompanyById
+      summary: Returns a Company meta information by Company domain
+      operationId: getCompanyByDomain
       parameters:
-        - name: company_id
+        - name: domain
           in: query
           required: true
-          description: pass an company id for looking up company meta information
+          description: pass a company domain for looking up company meta information
           schema:
             type : string
-            format: uuid
+            format: hostname
       responses:
         '200':    # status code
           description: A JSON object of company meta information
@@ -48,14 +48,14 @@ paths:
           
       x-amazon-apigateway-integration:
         uri:
-          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${EAPGetCompanyFunction.Arn}/invocations
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${EAPCRUDCompanyFunction.Arn}/invocations
         httpMethod: POST
         passthroughBehavior: WHEN_NO_TEMPLATES
         contentHandling: CONVERT_TO_TEXT
         type: aws_proxy
       x-amazon-apigateway-request-validator: basic
-
-    put:
+      
+    post:
       tags:
         - companies
       summary: Creates a new Company.
@@ -68,12 +68,6 @@ paths:
               $ref: '#/components/schemas/Company'
         description: Company information to add
       responses:
-        '200':
-          description: 'Company updated'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Company'
         '201':
           description: 'Company created'
           content:
@@ -86,7 +80,40 @@ paths:
           description: 'Item already exists'
       x-amazon-apigateway-integration:
         uri:
-          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${EAPPutCompanyFunction.Arn}/invocations
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${EAPCRUDCompanyFunction.Arn}/invocations
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_TEMPLATES
+        contentHandling: CONVERT_TO_TEXT
+        type: aws_proxy
+      x-amazon-apigateway-request-validator: basic
+
+    put:
+      tags:
+        - companies
+      summary: updates an existing Company.
+      operationId: updateCompany
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Company'
+        description: Company information to update
+      responses:
+        '200':
+          description: 'Company updated'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Company'
+        
+        '400':
+          description: 'Invalid input'
+        '409':
+          description: 'Item already exists'
+      x-amazon-apigateway-integration:
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${EAPCRUDCompanyFunction.Arn}/invocations
         httpMethod: POST
         passthroughBehavior: WHEN_NO_TEMPLATES
         contentHandling: CONVERT_TO_TEXT
@@ -456,21 +483,18 @@ components:
       allOf:
         - type: object
           properties:
-            company_id:
+            domain:
               type: string
-              format: uuid
+              format: hostname
             name:
               type: string
               minLength: 3
               maxLength: 40
-            domain:
-              type: string
-              format: hostname
             address:
               type: string
           required:
-            - name
             - domain
+            - name
             - address
         - $ref: '#/components/schemas/Common'
           

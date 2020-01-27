@@ -2,6 +2,7 @@ import os
 import boto3
 import json
 import decimal
+from pprint import pprint as pp
 
 from boto3.dynamodb.conditions import Key, Attr
 from botocore.exceptions import ClientError
@@ -11,6 +12,9 @@ from encoder_class import DecimalEncoder
 def crud_handler(event, context):
     if event['httpMethod']=='GET':
         response = get_company_meta(event, context)
+        return response
+    if event['httpMethod']=='POST':
+        response = post_company_meta(event, context)
         return response
     if event['httpMethod']=='PUT':
         response = put_company_meta(event, context)
@@ -22,8 +26,8 @@ def crud_handler(event, context):
 def get_company_meta(event, context):
     
     table = __get_table_client()
-    company_id = event["queryStringParameters"]["company_id"]
-    PK, SK = _get_company_meta_keys(company_id)
+    company_domain = event["queryStringParameters"]["domain"]
+    PK, SK = _get_company_meta_keys(company_domain)
     print("Key: ", json.dumps({'PK':PK, 'SK':SK}, indent=4))
 
     try:
@@ -48,6 +52,37 @@ def get_company_meta(event, context):
     
     return _response(200, company_meta_info)
     
+
+def post_company_meta(event, context):
+    
+    table = __get_table_client()
+    
+    payload = json.loads(event['body'])
+    
+    item = _build_company_record(payload)
+    
+    print(PK, SK, name, domain, address, created_at, updated_at)
+
+    try:
+        table.put_item(Item=item, ReturnValues='ALL_OLD',
+            ReturnConsumedCapacity='TOTAL'
+        )
+        payload['company_id'] = company_id
+        # response = table.get_item(Key={"PK":"COMPANY#8fd4728b-89b6-40aa-a57a-85a4672ec9a0", "SK":"#METADATA#8fd4728b-89b6-40aa-a57a-85a4672ec9a0"}, ReturnConsumedCapacity='TOTAL')
+
+    except ClientError as e:
+        print(e.response['Error']['Message'])
+        return _response(500, {'status':"DynamoDB Client Error"})
+    except KeyError as e:
+        print(e)
+        return _response(404, {'status':"ITEM NOT FOUND"})
+    else:
+        print("PutItem succeeded:")
+        print(json.dumps(payload, indent=4, cls=DecimalEncoder))
+        
+    if json.loads(event['body']).get('company_id'):
+        return _response(200, payload)
+    return _response(201, payload)
 
 def put_company_meta(event, context):
     
@@ -111,36 +146,27 @@ def _parse_company_details(item):
 
 ''' Company partition key generator '''
 
-def _get_company_meta(payload):
-    import uuid
-    time_now_rfc = _date_time_now()
-    if not payload.get('company_id'):
-        company_id = str(uuid.uuid4())
-        created_at = time_now_rfc
-        updated_at = time_now_rfc
-    else:
-        company_id = payload['company_id']
-        updated_at = time_now_rfc
-        created_at = payload.get('created_at') if payload.get('created_at') else time_now_rfc
-    PK = "COMPANY#" + company_id
-    SK = "#METADATA#" + company_id
+def _build_company_record(payload):
+    
+    PK = "COMPANY#" + payload['domain']
+    SK = "#METADATA#" + payload['domain']
     name = payload['name']
     domain = payload['domain']
     address = payload['address']
-    return (
-        PK,
-        SK,
-        name,
-        domain,
-        address,
-        company_id,
-        created_at,
-        updated_at
-    )
+    created_at = updated_at = _date_time_now()
+    return {
+        'PK':PK,
+        'SK':SK,
+        'name':name,
+        'domain':domain,
+        'address':address,
+        'created_at':created_at,
+        'updated_at':updated_at,
+    }
 
-def _get_company_meta_keys(company_id):
-    PK = "COMPANY#" + company_id
-    SK = "#METADATA#" + company_id
+def _get_company_meta_keys(company_domain):
+    PK = "COMPANY#" + company_domain
+    SK = "#METADATA#" + company_domain
     return (
         PK,
         SK

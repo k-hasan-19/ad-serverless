@@ -10,12 +10,12 @@ Globals:
 
 
 Resources:
-  EAPGetCompanyFunction:
+  EAPCRUDCompanyFunction:
     Type: AWS::Serverless::Function
     Properties:
-      FunctionName: eap-get-company
+      FunctionName: eap-crud-company
       CodeUri: ./company-crud
-      Handler: app.get_company_meta
+      Handler: app.crud_handler
       Runtime: python3.8
       Policies:
         - DynamoDBCrudPolicy:
@@ -25,28 +25,7 @@ Resources:
           Type: Api
           Properties:
             Path: /company
-            Method: GET
-                
-            RestApiId:
-              Ref: EAPApi
-              
-  
-  EAPPutCompanyFunction:
-    Type: AWS::Serverless::Function
-    Properties:
-      FunctionName: eap-put-company
-      CodeUri: ./company-crud
-      Handler: app.put_company_meta
-      Runtime: python3.8
-      Policies:
-        - DynamoDBCrudPolicy:
-           TableName: inneedEap
-      Events:
-        CompanyPut:
-          Type: Api
-          Properties:
-            Path: /company
-            Method: PUT
+            Method: ANY
             RestApiId:
               Ref: EAPApi
               
