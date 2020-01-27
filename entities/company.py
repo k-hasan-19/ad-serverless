@@ -28,6 +28,12 @@ class CompanyMeta(BaseEntity):
         item.pop('_item', None)
         item.update(keys)
         return item
+    
+    @classmethod
+    def keys_from_domain(cls, domain):
+        PK = cls.PK_PREFIX + domain
+        SK = cls.SK_PREFIX + domain
+        return (PK, SK,)
 
     def _set_common(self):
         item = self._item

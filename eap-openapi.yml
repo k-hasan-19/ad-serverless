@@ -109,8 +109,6 @@ paths:
         
         '400':
           description: 'Invalid input'
-        '409':
-          description: 'Item already exists'
       x-amazon-apigateway-integration:
         uri:
           Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${EAPCRUDCompanyFunction.Arn}/invocations
