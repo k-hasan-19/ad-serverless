@@ -56,10 +56,24 @@ def post_company_meta(event, context):
     table = __get_table_client()
     
     payload = json.loads(event['body'])
-    
     company = CompanyMeta(payload)
+    keys = company.get_keys()
+    PK, SK = keys['PK'], keys['SK']
+    print("Key: ", json.dumps({'PK':PK, 'SK':SK}, indent=4))
+
+    try:
+        data = table.get_item(Key={"PK":PK, "SK":SK}, ReturnConsumedCapacity='TOTAL')
+        
+    except ClientError as e:
+        print(e.response['Error']['Message'])
+        return _response(500, {'status':"DynamoDB Client Error"})
+    if data.get('Item'):
+        return _response(409, {'status':"Item already exists!"})
+    
     table_record = company.get_record()
     pp(table_record)
+    
+    
 
     try:
         table.put_item(Item=table_record, ReturnConsumedCapacity='TOTAL')
@@ -86,28 +100,23 @@ def put_company_meta(event, context):
     PK = table_record['PK']
     SK = table_record['SK']
     try:
-        table.update_item(
+        response = table.update_item(
             Key={
                 'PK': PK,
                 'SK': SK
             },
-            UpdateExpression='SET #company_name = :company_name, #company_domain = :company_domain, #company_address = :company_address, #company_id = :company_id, #created_at = :created_at, #updated_at = :updated_at',
+            UpdateExpression='SET #company_name = :company_name, #company_address = :company_address, #updated_at = :updated_at',
             ExpressionAttributeNames={
                 '#company_name': 'name',
-                '#company_domain': 'domain',
                 '#company_address': 'address',
-                '#company_id': 'company_id',
-                '#created_at':'created_at',
                 '#updated_at':'updated_at'
             },
             ExpressionAttributeValues={
                 ':company_name': table_record['name'],
-                ':company_domain': table_record['domain'],
                 ':company_address': table_record['address'],
-                ':company_id': table_record['company_id'],
-                ':created_at': table_record['created_at'],
                 ':updated_at': table_record['updated_at']
             },
+            ReturnValues='ALL_NEW',
             ReturnConsumedCapacity='TOTAL'
         )
 
@@ -120,7 +129,7 @@ def put_company_meta(event, context):
     else:
         print("PutItem succeeded:")
         print(json.dumps(table_record, indent=4, cls=DecimalEncoder))
-    item = company.get_item()
+    item = CompanyMeta(response['Attributes']).get_item()
     return _response(200, item)
 
 def _response(status_code, json_body):
