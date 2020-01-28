@@ -61,28 +61,27 @@ def post_company_meta(event, context):
     PK, SK = keys['PK'], keys['SK']
     print("Key: ", json.dumps({'PK':PK, 'SK':SK}, indent=4))
 
-    try:
-        data = table.get_item(Key={"PK":PK, "SK":SK}, ReturnConsumedCapacity='TOTAL')
+    # try:
+    #     data = table.get_item(Key={"PK":PK, "SK":SK}, ReturnConsumedCapacity='TOTAL')
         
-    except ClientError as e:
-        print(e.response['Error']['Message'])
-        return _response(500, {'status':"DynamoDB Client Error"})
-    if data.get('Item'):
-        return _response(409, {'status':"Item already exists!"})
+    # except ClientError as e:
+    #     print(e.response['Error']['Message'])
+    #     return _response(500, {'status':"DynamoDB Client Error"})
+    # if data.get('Item'):
+    #     return _response(409, {'status':"Item already exists"})
     
     table_record = company.get_record()
-    pp(table_record)
+    # pp(table_record)
     
     
 
     try:
-        table.put_item(Item=table_record, ReturnConsumedCapacity='TOTAL')
+        table.put_item(Item=table_record, ConditionExpression='attribute_not_exists(PK)' ,ReturnConsumedCapacity='TOTAL')
     except ClientError as e:
+        if e.response['Error']['Code']=='ConditionalCheckFailedException':
+            return _response(409, {'status':"Item already exists"})
         print(e.response['Error']['Message'])
         return _response(500, {'status':"DynamoDB Client Error"})
-    except KeyError as e:
-        print(e)
-        return _response(404, {'status':"ITEM NOT FOUND"})
     else:
         print("PutItem succeeded:")
         print(json.dumps(table_record, indent=4, cls=DecimalEncoder))
@@ -106,6 +105,7 @@ def put_company_meta(event, context):
                 'SK': SK
             },
             UpdateExpression='SET #company_name = :company_name, #company_address = :company_address, #updated_at = :updated_at',
+            ConditionExpression= 'attribute_exists(PK)',
             ExpressionAttributeNames={
                 '#company_name': 'name',
                 '#company_address': 'address',
@@ -121,14 +121,17 @@ def put_company_meta(event, context):
         )
 
     except ClientError as e:
+        if e.response['Error']['Code']=='ConditionalCheckFailedException':
+            return _response(404, {'status':"ITEM NOT FOUND"})
+            
         print(e.response['Error']['Message'])
         return _response(500, {'status':"DynamoDB Client Error"})
-    except KeyError as e:
-        print(e)
-        return _response(404, {'status':"ITEM NOT FOUND"})
     else:
         print("PutItem succeeded:")
         print(json.dumps(table_record, indent=4, cls=DecimalEncoder))
+    print('Item update response: ',response)
+    if not response.get('Attributes'):
+        return _response(404, {'status':"ITEM NOT FOUND"})
     item = CompanyMeta(response['Attributes']).get_item()
     return _response(200, item)
 

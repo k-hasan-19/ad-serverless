@@ -45,6 +45,10 @@ paths:
                 $ref: '#/components/schemas/Company'
         '400':
           description: Bad input parameters
+        '404':
+          description: Item not found
+        '500':
+          description: DynamoDB Client Error
           
       x-amazon-apigateway-integration:
         uri:
@@ -75,9 +79,13 @@ paths:
               schema:
                 $ref: '#/components/schemas/Company'
         '400':
-          description: 'Invalid input'
+          description: Invalid input
+        '404':
+          description: Item not found
         '409':
-          description: 'Item already exists'
+          description: Item already exists
+        '500':
+          description: DynamoDB Client Error
       x-amazon-apigateway-integration:
         uri:
           Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${EAPCRUDCompanyFunction.Arn}/invocations
@@ -101,14 +109,18 @@ paths:
         description: Company information to update
       responses:
         '200':
-          description: 'Company updated'
+          description: Company updated
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Company'
         
         '400':
-          description: 'Invalid input'
+          description: Invalid input
+        '404':
+          description: Item not found
+        '500':
+          description: DynamoDB Client Error
       x-amazon-apigateway-integration:
         uri:
           Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${EAPCRUDCompanyFunction.Arn}/invocations
