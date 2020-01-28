@@ -60,19 +60,7 @@ def post_company_meta(event, context):
     keys = company.get_keys()
     PK, SK = keys['PK'], keys['SK']
     print("Key: ", json.dumps({'PK':PK, 'SK':SK}, indent=4))
-
-    # try:
-    #     data = table.get_item(Key={"PK":PK, "SK":SK}, ReturnConsumedCapacity='TOTAL')
-        
-    # except ClientError as e:
-    #     print(e.response['Error']['Message'])
-    #     return _response(500, {'status':"DynamoDB Client Error"})
-    # if data.get('Item'):
-    #     return _response(409, {'status':"Item already exists"})
-    
     table_record = company.get_record()
-    # pp(table_record)
-    
     
 
     try:

@@ -30,6 +30,12 @@ class UserMeta(BaseEntity):
         item.pop('_item', None)
         item.update(keys)
         return item
+        
+    @classmethod
+    def keys_from_ids(cls, company_id, user_id):
+        PK = cls.PK_PREFIX + company_id
+        SK = cls.SK_PREFIX + user_id
+        return (PK, SK,)
 
     def _set_common(self):
         item = self._item

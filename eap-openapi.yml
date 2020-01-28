@@ -7,7 +7,7 @@ info:
 # https://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-swagger-extensions.html
   title: EAP InNeed API
   description: EAP CRUD & Analytics web service
-  version: '0.10.1'
+  version: '0.11.1'
   contact:
     email: kamrul@inneed.cloud
 
@@ -140,17 +140,17 @@ paths:
         - name: company_id
           in: query
           required: true
-          description: pass an company id for looking up relevant user meta information
+          description: pass an company id i.e domain for looking up relevant user meta information
           schema:
             type : string
-            format: uuid
+            format: hostname
         - name: user_id
           in: query
           required: true
-          description: pass an user id for looking up user meta information
+          description: pass an user id i.e primary email for looking up user meta information
           schema:
             type : string
-            format: uuid
+            format: email
       responses:
         '200':    # status code
           description: A JSON object of user meta information
@@ -160,17 +160,21 @@ paths:
                 $ref: '#/components/schemas/User'
         '400':
           description: Bad input parameters
+        '404':
+          description: Item not found
+        '500':
+          description: DynamoDB Client Error
           
       x-amazon-apigateway-integration:
         uri:
-          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${EAPGetUserFunction.Arn}/invocations
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${EAPUserCRUDFunction.Arn}/invocations
         httpMethod: POST
         passthroughBehavior: WHEN_NO_TEMPLATES
         contentHandling: CONVERT_TO_TEXT
         type: aws_proxy
       x-amazon-apigateway-request-validator: basic
 
-    put:
+    post:
       tags:
         - users
       summary: Creates a new User.
@@ -183,12 +187,6 @@ paths:
               $ref: '#/components/schemas/User'
         description: User information to add
       responses:
-        '200':
-          description: 'User updated'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/User'
         '201':
           description: 'User created'
           content:
@@ -197,12 +195,59 @@ paths:
                 $ref: '#/components/schemas/User'
           
         '400':
-          description: 'Invalid input'
+          description: Invalid input
+        '404':
+          description: Item not found
         '409':
-          description: 'User already exists'
+          description: Item already exists
+        '500':
+          description: DynamoDB Client Error
       x-amazon-apigateway-integration:
         uri:
-          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${EAPPutUserFunction.Arn}/invocations
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${EAPUserCRUDFunction.Arn}/invocations
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_TEMPLATES
+        contentHandling: CONVERT_TO_TEXT
+        type: aws_proxy
+      x-amazon-apigateway-request-validator: basic
+    
+    put:
+      tags:
+        - users
+      summary: Creates a new User.
+      operationId: updateUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              allOf:
+                - type: object
+                  properties:
+                    user_id:
+                      type: string
+                      format: email
+                  required:
+                    - user_id
+                - $ref: '#/components/schemas/User'
+            
+        description: User information to update
+      responses:
+        '200':
+          description: 'User updated'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '400':
+          description: Invalid input
+        '404':
+          description: Item not found
+        '500':
+          description: DynamoDB Client Error
+      x-amazon-apigateway-integration:
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${EAPUserCRUDFunction.Arn}/invocations
         httpMethod: POST
         passthroughBehavior: WHEN_NO_TEMPLATES
         contentHandling: CONVERT_TO_TEXT
@@ -493,6 +538,9 @@ components:
       allOf:
         - type: object
           properties:
+            company_id:
+              type: string
+              format: hostname
             domain:
               type: string
               format: hostname
@@ -515,10 +563,10 @@ components:
           properties:
             company_id:
               type: string
-              format: uuid
+              format: hostname
             user_id:
               type: string
-              format: uuid
+              format: email
             email:
               type: string
               format: email

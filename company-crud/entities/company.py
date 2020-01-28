@@ -45,16 +45,3 @@ class CompanyMeta(BaseEntity):
             
     def __repr__(self):
         return "Company<{} -- {}>".format(self.company_id, self.name)
-        
-'''
-{
-  "company_id": "inneed.cloud",
-  "domain": "inneed.cloud",
-  "name": "Thomas Ltd",
-  "address": "997 Robles Forks\nEast Carolmouth, TX 74917",
-  "created_at": "2020-01-27T19:05:24.057243Z",
-  "updated_at": "2020-01-27T19:05:24.057243Z"
-}
-
-
-'''
