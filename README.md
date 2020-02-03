@@ -1,6 +1,8 @@
-# InNeed Employee Advocacy Platform(AWS SAM+OpenAPI 3.0.0 )
+## InNeed Employee Advocacy Platform(AWS SAM+OpenAPI 3.0.2 )
 
-| Warning: We are still at development stage. It's not stable yet |
+
+`Warning`: We are still at development stage. It's not stable yet
+
 ## Deployment
 
 ```
