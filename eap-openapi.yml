@@ -7,7 +7,7 @@ info:
 # https://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-swagger-extensions.html
   title: EAP InNeed API
   description: EAP CRUD & Analytics web service
-  version: '1.0.2'
+  version: '1.1.2'
   contact:
     email: kamrul@inneed.cloud
 
@@ -138,7 +138,7 @@ paths:
         type: aws_proxy
       x-amazon-apigateway-request-validator: basic
 
-  /{company_id}/user:
+  /user/{company_id}:
     post:
       tags:
         - users
@@ -185,7 +185,7 @@ paths:
         type: aws_proxy
       x-amazon-apigateway-request-validator: basic
 
-  /{company_id}/user/{user_id}:
+  /user/{company_id}/{user_id}:
     get:
       tags:
         - users
@@ -278,7 +278,7 @@ paths:
         type: aws_proxy
       x-amazon-apigateway-request-validator: basic
       
-  /{company_id}/post:
+  /post/{company_id}:
     post:
       tags:
         - posts
@@ -321,7 +321,7 @@ paths:
       x-amazon-apigateway-request-validator: basic
   
   
-  /{company_id}/post/{post_id}:
+  /post/{company_id}/{post_id}:
     get:
       tags:
         - posts
@@ -415,7 +415,7 @@ paths:
         type: aws_proxy
       x-amazon-apigateway-request-validator: basic
       
-  /{company_id}/posts:
+  /posts/{company_id}:
     get:
       tags:
         - posts
@@ -450,7 +450,7 @@ paths:
         type: aws_proxy
       x-amazon-apigateway-request-validator: basic
       
-  /{company_id}/{user_id}/posts:
+  /posts/{company_id}/{user_id}:
     get:
       tags:
         - posts
@@ -492,7 +492,7 @@ paths:
         type: aws_proxy
       x-amazon-apigateway-request-validator: basic
       
-  /{company_id}/share:
+  /share/{company_id}:
     post:
       tags:
         - share
@@ -532,7 +532,7 @@ paths:
         type: aws_proxy
       x-amazon-apigateway-request-validator: basic
       
-  /{company_id}/{user_id}/{post_id}/ShareDetails:
+  /ShareDetails/{company_id}/{user_id}/{post_id}:
     get:
       tags:
         - share-details
@@ -579,7 +579,7 @@ paths:
         type: aws_proxy
       x-amazon-apigateway-request-validator: basic
       
-  /{company_id}/{post_id}:
+  /shareAnalytics/{company_id}/{post_id}:
     get:
       tags:
         - share-details
