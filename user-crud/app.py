@@ -67,7 +67,7 @@ def post_user_meta(event, context):
     
 
     try:
-        table.put_item(Item=table_record, ConditionExpression='attribute_not_exists(SK)' ,ReturnConsumedCapacity='TOTAL')
+        table.put_item(Item=table_record, ConditionExpression='attribute_not_exists(PK) and attribute_not_exists(SK)' ,ReturnConsumedCapacity='TOTAL')
     except ClientError as e:
         if e.response['Error']['Code']=='ConditionalCheckFailedException':
             return _response(409, {'status':"Item already exists"})
@@ -96,24 +96,19 @@ def put_user_meta(event, context):
                 'PK': PK,
                 'SK': SK
             },
-            ConditionExpression='attribute_not_exists(SK)',
-            UpdateExpression='SET #company_id = :company_id, #email = :email, #first_name = :first_name, #last_name = :last_name, #address = :address, #is_admin = :is_admin,  #updated_at = :updated_at',
+            ConditionExpression='attribute_exists(PK) and attribute_exists(SK)',
+            UpdateExpression='SET #company_id = :company_id, #first_name = :first_name, #last_name = :last_name, #address = :address, #updated_at = :updated_at',
             ExpressionAttributeNames={
                 '#company_id': 'company_id',
-                '#email': 'email',
                 '#first_name': 'first_name',
                 '#last_name': 'last_name',
                 '#address': 'address',
-                '#is_admin': 'is_admin',
                 '#updated_at':'updated_at'
             },
             ExpressionAttributeValues={
-                ':company_id': table_record['company_id'],
-                ':email': table_record['email'],
                 ':first_name': table_record['first_name'],
                 ':last_name': table_record['last_name'],
                 ':address': table_record['address'],
-                ':is_admin': table_record['is_admin'],
                 ':updated_at': table_record['updated_at']
             },
             ReturnValues='ALL_NEW',

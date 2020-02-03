@@ -52,7 +52,7 @@ paths:
           
       x-amazon-apigateway-integration:
         uri:
-          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${EAPCRUDCompanyFunction.Arn}/invocations
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${EAPCompanyCRUDFunction.Arn}/invocations
         httpMethod: POST
         passthroughBehavior: WHEN_NO_TEMPLATES
         contentHandling: CONVERT_TO_TEXT
@@ -88,7 +88,7 @@ paths:
           description: DynamoDB Client Error
       x-amazon-apigateway-integration:
         uri:
-          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${EAPCRUDCompanyFunction.Arn}/invocations
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${EAPCompanyCRUDFunction.Arn}/invocations
         httpMethod: POST
         passthroughBehavior: WHEN_NO_TEMPLATES
         contentHandling: CONVERT_TO_TEXT
@@ -105,7 +105,15 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Company'
+              allOf:
+                - type: object
+                  properties:
+                    company_id:
+                      type: string
+                      format: hostname
+                  required:
+                    - company_id
+                - $ref: '#/components/schemas/Company'
         description: Company information to update
       responses:
         '200':
@@ -123,7 +131,7 @@ paths:
           description: DynamoDB Client Error
       x-amazon-apigateway-integration:
         uri:
-          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${EAPCRUDCompanyFunction.Arn}/invocations
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${EAPCompanyCRUDFunction.Arn}/invocations
         httpMethod: POST
         passthroughBehavior: WHEN_NO_TEMPLATES
         contentHandling: CONVERT_TO_TEXT
