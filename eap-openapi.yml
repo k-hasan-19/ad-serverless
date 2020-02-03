@@ -1,4 +1,4 @@
-openapi: 3.0.0
+openapi: 3.0.2
 # Added by API Auto Mocking Plugin
 servers:
   - description: SwaggerHub API Auto Mocking
@@ -7,7 +7,7 @@ info:
 # https://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-swagger-extensions.html
   title: EAP InNeed API
   description: EAP CRUD & Analytics web service
-  version: '0.11.1'
+  version: '1.0.2'
   contact:
     email: kamrul@inneed.cloud
 
@@ -23,42 +23,6 @@ x-amazon-apigateway-request-validators:
 
 paths:
   /company:
-    get:
-      tags:
-        - companies
-      summary: Returns a Company meta information by Company domain
-      operationId: getCompanyByDomain
-      parameters:
-        - name: domain
-          in: query
-          required: true
-          description: pass a company domain for looking up company meta information
-          schema:
-            type : string
-            format: hostname
-      responses:
-        '200':    # status code
-          description: A JSON object of company meta information
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Company'
-        '400':
-          description: Bad input parameters
-        '404':
-          description: Item not found
-        '500':
-          description: DynamoDB Client Error
-          
-      x-amazon-apigateway-integration:
-        uri:
-          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${EAPCompanyCRUDFunction.Arn}/invocations
-        httpMethod: POST
-        passthroughBehavior: WHEN_NO_TEMPLATES
-        contentHandling: CONVERT_TO_TEXT
-        type: aws_proxy
-      x-amazon-apigateway-request-validator: basic
-      
     post:
       tags:
         - companies
@@ -95,6 +59,42 @@ paths:
         type: aws_proxy
       x-amazon-apigateway-request-validator: basic
 
+  /company/{company_id}:
+    get:
+      tags:
+        - companies
+      summary: Returns a Company meta information by Company domain
+      operationId: getCompanyByDomain
+      parameters:
+        - name: company_id
+          in: path
+          required: true
+          description: pass a company domain for looking up company meta information
+          schema:
+            type : string
+            format: hostname
+      responses:
+        '200':    # status code
+          description: A JSON object of company meta information
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Company'
+        '400':
+          description: Bad input parameters
+        '404':
+          description: Item not found
+        '500':
+          description: DynamoDB Client Error
+          
+      x-amazon-apigateway-integration:
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${EAPCompanyCRUDFunction.Arn}/invocations
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_TEMPLATES
+        contentHandling: CONVERT_TO_TEXT
+        type: aws_proxy
+      x-amazon-apigateway-request-validator: basic
     put:
       tags:
         - companies
@@ -105,15 +105,7 @@ paths:
         content:
           application/json:
             schema:
-              allOf:
-                - type: object
-                  properties:
-                    company_id:
-                      type: string
-                      format: hostname
-                  required:
-                    - company_id
-                - $ref: '#/components/schemas/Company'
+              - $ref: '#/components/schemas/Company'
         description: Company information to update
       responses:
         '200':
@@ -137,56 +129,22 @@ paths:
         contentHandling: CONVERT_TO_TEXT
         type: aws_proxy
       x-amazon-apigateway-request-validator: basic
-      
-  /user:
-    get:
-      tags:
-        - users
-      summary: Returns a User meta information by ID
-      operationId: getUserById
-      parameters:
-        - name: company_id
-          in: query
-          required: true
-          description: pass an company id i.e domain for looking up relevant user meta information
-          schema:
-            type : string
-            format: hostname
-        - name: user_id
-          in: query
-          required: true
-          description: pass an user id i.e primary email for looking up user meta information
-          schema:
-            type : string
-            format: email
-      responses:
-        '200':    # status code
-          description: A JSON object of user meta information
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/User'
-        '400':
-          description: Bad input parameters
-        '404':
-          description: Item not found
-        '500':
-          description: DynamoDB Client Error
-          
-      x-amazon-apigateway-integration:
-        uri:
-          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${EAPUserCRUDFunction.Arn}/invocations
-        httpMethod: POST
-        passthroughBehavior: WHEN_NO_TEMPLATES
-        contentHandling: CONVERT_TO_TEXT
-        type: aws_proxy
-      x-amazon-apigateway-request-validator: basic
 
+  /{company_id}/user:
     post:
       tags:
         - users
       summary: Creates a new User.
       operationId: addUser
+      parameters:
+        - name: company_id
+          in: path
+          required: true
+          description: pass an company id i.e domain for looking up relevant user meta information
+          schema:
+            type: string
+            format: hostname
+
       requestBody:
         required: true
         content:
@@ -218,26 +176,76 @@ paths:
         contentHandling: CONVERT_TO_TEXT
         type: aws_proxy
       x-amazon-apigateway-request-validator: basic
-    
+
+  /{company_id}/user/{user_id}:
+    get:
+      tags:
+        - users
+      summary: Returns a User meta information by ID
+      operationId: getUserById
+      parameters:
+        - name: company_id
+          in: path
+          required: true
+          description: pass an company id i.e domain for looking up relevant user meta information
+          schema:
+            type : string
+            format: hostname
+        - name: user_id
+          in: path
+          required: true
+          description: pass an user id i.e primary email for looking up user meta information
+          schema:
+            type : string
+            format: email
+      responses:
+        '200':    # status code
+          description: A JSON object of user meta information
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '400':
+          description: Bad input parameters
+        '404':
+          description: Item not found
+        '500':
+          description: DynamoDB Client Error
+          
+      x-amazon-apigateway-integration:
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${EAPUserCRUDFunction.Arn}/invocations
+        httpMethod: POST
+        passthroughBehavior: WHEN_NO_TEMPLATES
+        contentHandling: CONVERT_TO_TEXT
+        type: aws_proxy
+      x-amazon-apigateway-request-validator: basic
     put:
       tags:
         - users
-      summary: Creates a new User.
+      summary: Updates an existing User.
       operationId: updateUser
+      parameters:
+        - name: company_id
+          in: path
+          required: true
+          description: pass an company id i.e domain to update relevant user meta information
+          schema:
+            type : string
+            format: hostname
+        - name: user_id
+          in: path
+          required: true
+          description: pass an user id i.e primary email to update user meta information
+          schema:
+            type : string
+            format: email
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              allOf:
-                - type: object
-                  properties:
-                    user_id:
-                      type: string
-                      format: email
-                  required:
-                    - user_id
-                - $ref: '#/components/schemas/User'
+              $ref: '#/components/schemas/User'
             
         description: User information to update
       responses:
