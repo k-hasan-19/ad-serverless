@@ -100,12 +100,20 @@ paths:
         - companies
       summary: updates an existing Company.
       operationId: updateCompany
+      parameters:
+        - name: company_id
+          in: path
+          required: true
+          description: pass a company domain to update company meta information
+          schema:
+            type : string
+            format: hostname
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              - $ref: '#/components/schemas/Company'
+              $ref: '#/components/schemas/Company'
         description: Company information to update
       responses:
         '200':
@@ -276,6 +284,14 @@ paths:
         - posts
       summary: Adds a new post
       operationId: addPost
+      parameters:
+        - name: company_id
+          in: path
+          required: true
+          description: pass a company id for looking up relevant Post details
+          schema:
+            type : string
+            format: hostname
       requestBody:
         required: true
         content:
@@ -349,7 +365,22 @@ paths:
       tags:
         - posts
       summary: Updates an existing Post.
-      operationId: addPost
+      operationId: updatePost
+      parameters:
+        - name: company_id
+          in: path
+          required: true
+          description: pass a company id for looking up relevant Post details
+          schema:
+            type : string
+            format: uuid
+        - name: post_id
+          in: path
+          required: true
+          description: pass a post id for looking up Post details
+          schema:
+            type : string
+            format: uuid
       requestBody:
         required: true
         content:
@@ -548,7 +579,7 @@ paths:
         type: aws_proxy
       x-amazon-apigateway-request-validator: basic
       
-  /{company_id}/{post_id}/:
+  /{company_id}/{post_id}:
     get:
       tags:
         - share-details
