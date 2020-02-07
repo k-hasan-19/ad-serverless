@@ -3,3 +3,7 @@ __pycache__/
 
 # code snippets folder
 snippets/
+
+
+# sam builds
+.aws-sam/
