@@ -22,10 +22,17 @@ Resources:
         - DynamoDBCrudPolicy:
            TableName: inneedEap
       Events:
-        CompanyCRUD:
+        # CompanyPOST:
+        #   Type: Api
+        #   Properties:
+        #     Path: /company
+        #     Method: POST
+        #     RestApiId:
+        #       Ref: EAPApi
+        CompanyGETPUT:
           Type: Api
           Properties:
-            Path: /company
+            Path: /company/{company_id}
             Method: ANY
             RestApiId:
               Ref: EAPApi

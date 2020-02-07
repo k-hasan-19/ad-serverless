@@ -26,6 +26,7 @@ def get_company_meta(event, context):
 
     table = __get_table_client()
     company_id = event["pathParameters"]["company_id"]
+
     PK, SK = CompanyMeta.keys_from_domain(company_id)
     print("Key: ", json.dumps({"PK": PK, "SK": SK}, indent=4))
 
