@@ -22,13 +22,13 @@ Resources:
         - DynamoDBCrudPolicy:
            TableName: inneedEap
       Events:
-        # CompanyPOST:
-        #   Type: Api
-        #   Properties:
-        #     Path: /company
-        #     Method: POST
-        #     RestApiId:
-        #       Ref: EAPApi
+        CompanyPOST:
+          Type: Api
+          Properties:
+            Path: /company
+            Method: POST
+            RestApiId:
+              Ref: EAPApi
         CompanyGETPUT:
           Type: Api
           Properties:
@@ -211,7 +211,7 @@ Resources:
         Fn::Transform:
           Name: AWS::Include
           Parameters:
-            Location: eap-openapi.yml
+            Location: eap-openapi.yaml
       
         
     
