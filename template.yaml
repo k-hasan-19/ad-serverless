@@ -48,10 +48,17 @@ Resources:
         - DynamoDBCrudPolicy:
            TableName: inneedEap
       Events:
-        UserCRUD:
+        UserPOST:
           Type: Api
           Properties:
-            Path: /user
+            Path: /user/{company_id}
+            Method: POST
+            RestApiId:
+              Ref: EAPApi
+        UserGETPUT:
+          Type: Api
+          Properties:
+            Path: /user/{company_id}/{user_id}
             Method: ANY
             RestApiId:
               Ref: EAPApi
