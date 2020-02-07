@@ -205,6 +205,7 @@ paths:
           description: pass an user id i.e primary email for looking up user meta information
           schema:
             type : string
+            pattern: '[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,3}'
             format: email
       responses:
         '200':    # status code
@@ -247,6 +248,7 @@ paths:
           description: pass an user id i.e primary email to update user meta information
           schema:
             type : string
+            pattern: '[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,3}'
             format: email
       requestBody:
         required: true
@@ -628,9 +630,6 @@ components:
       allOf:
         - type: object
           properties:
-            company_id:
-              type: string
-              format: hostname
             domain:
               type: string
               format: hostname
@@ -656,9 +655,12 @@ components:
               format: hostname
             user_id:
               type: string
-              format: email
+              format: uuid
+              pattern: '[0-9a-fA-F]{8}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{12}'
+              description: cognito user sub_id
             email:
               type: string
+              pattern: '[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,3}'
               format: email
             first_name:
               type: string
@@ -674,6 +676,7 @@ components:
               type: boolean
           required:
             - company_id
+            - user_id
             - email
             - first_name
             - last_name

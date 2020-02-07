@@ -7,9 +7,8 @@ class UserMeta(BaseEntity):
 
     def __init__(self, item):
         self._item = item
-        self.company_id = item["domain"]
-        self.user_id = item["email"]
-        self.domain = item["domain"]
+        self.company_id = item["company_id"]
+        self.user_id = item["user_id"]
         self.email = item["email"]
         self.first_name = item["first_name"]
         self.last_name = item["last_name"]
@@ -22,14 +21,15 @@ class UserMeta(BaseEntity):
 
     def get_item(self):
         item = dict(self.__dict__)
-        item.pop("_item", None)
+        item.pop("_item")
         return item
 
     def get_record(self):
         keys = self.get_keys()
         item = dict(self.__dict__)
-        item.pop("_item", None)
+        _item = item.pop("_item")
         item.update(keys)
+        item.update(_item)
         return item
 
     @classmethod
