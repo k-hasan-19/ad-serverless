@@ -41,9 +41,10 @@ class CompanyMeta(BaseEntity):
 
     def _set_common(self):
         item = self._item
-        if item.get("created_at") and item.get("updated_at"):
+        if item.get("created_at"):
             self.created_at = item["created_at"]
-            self.updated_at = item["updated_at"]
+            self.updated_at = super()._date_time_now()
+
         else:
             self.created_at = self.updated_at = super()._date_time_now()
 

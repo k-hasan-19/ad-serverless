@@ -39,4 +39,6 @@ class BaseEntity(ABC):
     def _date_time_now(self):
         import datetime
 
-        return str(datetime.datetime.utcnow().isoformat("T")) + "Z"
+        return (
+            str(datetime.datetime.utcnow().replace(microsecond=0).isoformat("T")) + "Z"
+        )

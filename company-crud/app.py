@@ -32,7 +32,8 @@ def get_company_meta(event, context):
 
     try:
         data = table.get_item(Key={"PK": PK, "SK": SK}, ReturnConsumedCapacity="TOTAL")
-        company = CompanyMeta(data["Item"])
+        if not data.get("Item"):
+            raise KeyError
 
     except ClientError as e:
         print(e.response["Error"]["Message"])
@@ -41,6 +42,7 @@ def get_company_meta(event, context):
         print(e)
         return _response(404, {"status": "ITEM NOT FOUND"})
     else:
+        company = CompanyMeta(data["Item"])
         consumed_cap = data["ConsumedCapacity"]
         print("GetItem succeeded:")
         print(json.dumps(data, indent=4, cls=DecimalEncoder))

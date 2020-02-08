@@ -15,14 +15,15 @@ class Post(BaseEntity):
         self.post_content = item["post_content"]
         self.can_share_on = item["can_share_on"]
         self.points_map = item["points_map"]
+        self.uuid = str(uuid.uuid4())
         super().__init__()
 
     def get_keys(self):
         item = self._item
         if item.get("post_id"):
-            SK = Post.SK_PREFIX + item["post_id"]
+            SK = self.created_at + "#" + Post.SK_PREFIX + item["post_id"]
         else:
-            SK = Post.SK_PREFIX + str(uuid.uuid4())
+            SK = self.created_at + "#" + Post.SK_PREFIX + self.uuid
 
         PK = Post.PK_PREFIX + self.company_id
         return {"PK": PK, "SK": SK}
@@ -30,22 +31,39 @@ class Post(BaseEntity):
     def get_item(self):
         item = dict(self.__dict__)
         item.pop("_item", None)
+        item.pop("uuid", None)
         return item
 
     def get_record(self):
         keys = self.get_keys()
         item = dict(self.__dict__)
         item.pop("_item", None)
+        item.pop("uuid", None)
         item.update(keys)
         return item
+
+    @classmethod
+    def keys_from_ids_and_date(cls, company_id, post_id, created_at):
+        PK = cls.PK_PREFIX + company_id
+        SK = created_at + "#" + cls.SK_PREFIX + post_id
+        return (
+            PK,
+            SK,
+        )
 
     def _set_common(self):
         item = self._item
         if item.get("created_at"):
             self.created_at = item["created_at"]
-            self.updated_at = item["updated_at"]
+            self.updated_at = super()._date_time_now()
+
         else:
             self.created_at = self.updated_at = super()._date_time_now()
+
+        if item.get("post_id"):
+            self.post_id = item["post_id"]
+        else:
+            self.post_id = self.uuid
 
     def _assert(self):
         can_share_on = self.can_share_on

@@ -34,8 +34,8 @@ def get_user_meta(event, context):
 
     try:
         data = table.get_item(Key={"PK": PK, "SK": SK}, ReturnConsumedCapacity="TOTAL")
-
-        user = UserMeta(data["Item"])
+        if not data.get("Item"):
+            raise KeyError
 
     except ClientError as e:
         print(e.response["Error"]["Message"])
@@ -44,6 +44,7 @@ def get_user_meta(event, context):
         print(e)
         return _response(404, {"status": "ITEM NOT FOUND"})
     else:
+        user = UserMeta(data["Item"])
         consumed_cap = data["ConsumedCapacity"]
         print("GetItem succeeded:")
         print(json.dumps(data, indent=4, cls=DecimalEncoder))

@@ -63,6 +63,32 @@ Resources:
             RestApiId:
               Ref: EAPApi
               
+  EAPPostCRUDFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: eap-post-crud
+      CodeUri: ./post-crud
+      Handler: app.crud_handler
+      Runtime: python3.8
+      Policies:
+        - DynamoDBCrudPolicy:
+           TableName: inneedEap
+      Events:
+        PostPOST:
+          Type: Api
+          Properties:
+            Path: /post/{company_id}
+            Method: POST
+            RestApiId:
+              Ref: EAPApi
+        PostGETPUT:
+          Type: Api
+          Properties:
+            Path: /post/{company_id}/{post_id}
+            Method: ANY
+            RestApiId:
+              Ref: EAPApi
+              
   EAPGetCompanyPostsFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -98,45 +124,6 @@ Resources:
           Properties:
             Path: /postsByAdminUser
             Method: GET
-            RestApiId:
-              Ref: EAPApi
-              
-  
-  EAPGetPostFunction:
-    Type: AWS::Serverless::Function
-    Properties:
-      FunctionName: eap-get-post
-      CodeUri: ./post-crud
-      Handler: app.get_post_meta
-      Runtime: python3.8
-      Policies:
-        - DynamoDBCrudPolicy:
-           TableName: inneedEap
-      Events:
-        UserPut:
-          Type: Api
-          Properties:
-            Path: /get
-            Method: GET
-            RestApiId:
-              Ref: EAPApi
-  
-  EAPPutPostFunction:
-    Type: AWS::Serverless::Function
-    Properties:
-      FunctionName: eap-put-post
-      CodeUri: ./post-crud
-      Handler: app.put_post_meta
-      Runtime: python3.8
-      Policies:
-        - DynamoDBCrudPolicy:
-           TableName: inneedEap
-      Events:
-        UserPut:
-          Type: Api
-          Properties:
-            Path: /post
-            Method: PUT
             RestApiId:
               Ref: EAPApi
               

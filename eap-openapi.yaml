@@ -315,7 +315,7 @@ paths:
           description: 'Post already exists'
       x-amazon-apigateway-integration:
         uri:
-          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${EAPPutPostFunction.Arn}/invocations
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${EAPPostCRUDFunction.Arn}/invocations
         httpMethod: POST
         passthroughBehavior: WHEN_NO_TEMPLATES
         contentHandling: CONVERT_TO_TEXT
@@ -344,6 +344,14 @@ paths:
           schema:
             type : string
             format: uuid
+        - in: query
+          name: created_at
+          required: true
+          description: pass the created_at date-time for looking up relevant Post details
+          schema:
+            type : string
+            format: date-time
+            pattern: '^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$'
       responses:
         '200':    # status code
           description: A JSON object of user meta information
@@ -356,7 +364,7 @@ paths:
           
       x-amazon-apigateway-integration:
         uri:
-          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${EAPGetPostFunction.Arn}/invocations
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${EAPPostCRUDFunction.Arn}/invocations
         httpMethod: POST
         passthroughBehavior: WHEN_NO_TEMPLATES
         contentHandling: CONVERT_TO_TEXT
@@ -383,6 +391,14 @@ paths:
           schema:
             type : string
             format: uuid
+        - in: query
+          name: created_at
+          required: true
+          description: pass the created_at date-time for looking up relevant Post details
+          schema:
+            type : string
+            format: date-time
+            pattern: '^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$'
       requestBody:
         required: true
         content:
@@ -410,7 +426,7 @@ paths:
           description: 'Post already exists'
       x-amazon-apigateway-integration:
         uri:
-          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${EAPPutPostFunction.Arn}/invocations
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${EAPPostCRUDFunction.Arn}/invocations
         httpMethod: POST
         passthroughBehavior: WHEN_NO_TEMPLATES
         contentHandling: CONVERT_TO_TEXT
@@ -688,7 +704,7 @@ components:
           properties:
             company_id:
               type: string
-              format: uuid
+              format: hostname
             user_id:
               type: string
               format: uuid
@@ -706,6 +722,7 @@ components:
             points_map:
               $ref: '#/components/schemas/PointsMap'
           required:
+            - company_id
             - user_id
             - post_title
             - post_content
@@ -715,7 +732,7 @@ components:
       properties:
         company_id:
           type: string
-          format: uuid
+          format: hostname
         user_id:
           type: string
           format: uuid
