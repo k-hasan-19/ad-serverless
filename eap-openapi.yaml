@@ -5,11 +5,11 @@ servers:
     url: https://virtserver.swaggerhub.com/k-hasan-19/eap/1.0.0
 info:
 # https://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-swagger-extensions.html
-  title: EAP InNeed API
+  title: EAP API
   description: EAP CRUD & Analytics web service
   version: '1.2.2'
   contact:
-    email: kamrul@inneed.cloud
+    email: k.hasan.rajib@gmail.com
 
 x-amazon-apigateway-request-validators:
   basic:
