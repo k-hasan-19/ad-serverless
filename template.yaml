@@ -5,7 +5,7 @@ Globals:
     Timeout: 3
     Environment:
       Variables:
-        TABLE_NAME: inneedEap
+        TABLE_NAME: eaptable
         AWS_REGION_DYNAMODB: us-west-2
         
 
@@ -20,7 +20,7 @@ Resources:
       Runtime: python3.8
       Policies:
         - DynamoDBCrudPolicy:
-           TableName: inneedEap
+           TableName: eaptable
       Events:
         CompanyPOST:
           Type: Api
@@ -46,7 +46,7 @@ Resources:
       Runtime: python3.8
       Policies:
         - DynamoDBCrudPolicy:
-           TableName: inneedEap
+           TableName: eaptable
       Events:
         UserPOST:
           Type: Api
@@ -72,7 +72,7 @@ Resources:
       Runtime: python3.8
       Policies:
         - DynamoDBCrudPolicy:
-           TableName: inneedEap
+           TableName: eaptable
       Events:
         PostPOST:
           Type: Api
@@ -98,7 +98,7 @@ Resources:
       Runtime: python3.8
       Policies:
         - DynamoDBCrudPolicy:
-           TableName: inneedEap
+           TableName: eaptable
       Events:
         UserGet:
           Type: Api
@@ -117,7 +117,7 @@ Resources:
       Runtime: python3.8
       Policies:
         - DynamoDBCrudPolicy:
-           TableName: inneedEap
+           TableName: eaptable
       Events:
         UserGet:
           Type: Api
@@ -136,7 +136,7 @@ Resources:
       Runtime: python3.8
       Policies:
         - DynamoDBCrudPolicy:
-           TableName: inneedEap
+           TableName: eaptable
       Events:
         UserPut:
           Type: Api
@@ -155,7 +155,7 @@ Resources:
       Runtime: python3.8
       Policies:
         - DynamoDBCrudPolicy:
-           TableName: inneedEap
+           TableName: eaptable
       Events:
         UserPut:
           Type: Api
@@ -174,7 +174,7 @@ Resources:
       Runtime: python3.8
       Policies:
         - DynamoDBCrudPolicy:
-           TableName: inneedEap
+           TableName: eaptable
       Events:
         UserPut:
           Type: Api
